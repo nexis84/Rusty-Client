@@ -89,7 +89,6 @@ Source: "Fonts\*"; DestDir: "{app}\Fonts_backup"; Flags: ignoreversion recursesu
 
 ; Documentation
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme
-Source: "READ_FIRST.txt"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{src}\READ_FIRST.txt'))
 Source: "SECURE_CREDENTIALS_SETUP.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
