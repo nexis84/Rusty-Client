@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.4.1"
+CURRENT_VERSION = "1.4.2"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"
@@ -95,7 +95,14 @@ class AutoUpdater:
     def apply_update(self, downloaded_file):
         """Replace current executable/folder with new version and restart"""
         try:
-            if getattr(sys, 'frozen', False):
+            # Check if running as compiled executable
+            # Nuitka sets __compiled__ attribute instead of sys.frozen
+            is_frozen = getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__')
+            print(f"DEBUG: sys.frozen = {getattr(sys, 'frozen', False)}")
+            print(f"DEBUG: sys.__compiled__ = {hasattr(sys, '__compiled__')}")
+            print(f"DEBUG: sys.executable = {sys.executable}")
+            
+            if is_frozen:
                 # Running as executable
                 current_exe = sys.executable
                 current_dir = os.path.dirname(current_exe)
@@ -107,7 +114,9 @@ class AutoUpdater:
                     # Single EXE update
                     return self._apply_exe_update(downloaded_file, current_exe)
             else:
-                return False, "Auto-update only works with compiled executable"
+                error_msg = f"Auto-update only works with compiled executable.\nDetected: frozen={getattr(sys, 'frozen', False)}, compiled={hasattr(sys, '__compiled__')}, exe={sys.executable}"
+                print(f"ERROR: {error_msg}")
+                return False, error_msg
                 
         except Exception as e:
             return False, f"Update failed: {str(e)}"
