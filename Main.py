@@ -36,16 +36,21 @@ from twitchio.ext.commands import Bot
 from twitchio.ext.commands import Command
 
 # Load environment variables from .env file
-# When packaged with PyInstaller, look for .env in the same directory as the executable
+# When packaged with PyInstaller, look for .env in the bundle's data directory
 if getattr(sys, 'frozen', False):
     # Running as PyInstaller bundle
-    app_dir = os.path.dirname(sys.executable)
+    # PyInstaller creates a temp folder and stores path in _MEIPASS
+    if hasattr(sys, '_MEIPASS'):
+        app_dir = sys._MEIPASS
+    else:
+        app_dir = os.path.dirname(sys.executable)
 else:
     # Running as normal Python script
     app_dir = os.path.dirname(__file__)
 
 env_path = os.path.join(app_dir, '.env')
 print(f"Looking for .env file at: {env_path}")
+print(f"File exists: {os.path.exists(env_path)}")
 load_dotenv(env_path, override=True)
 
 ENV_TWITCH_TOKEN = os.getenv('TWITCH_TOKEN', 'N/A')
