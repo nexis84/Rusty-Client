@@ -49,11 +49,27 @@ Check:
      - 🛠️ Build system improvements
      - 🐛 Bug fixes and performance improvements
      
+     ## ⚠️ IMPORTANT: Windows Security Warning
+     
+     **Windows Defender may flag this as a virus - THIS IS A FALSE POSITIVE!**
+     
+     This happens because the app bundles Python and isn't signed with an expensive certificate yet.
+     
+     **The app is completely safe:**
+     - ✅ Open source code on this GitHub
+     - ✅ Built with PyInstaller (standard tool)
+     - ✅ No malicious code
+     
+     **To run:**
+     1. If you see "Virus detected" - click **"Actions"** → **"Allow"**
+     2. If blocked, click **"More info"** → **"Run anyway"**
+     3. Or add to Windows Defender exclusions (see README)
+     
      ## 📥 Installation
      
      1. Download `RustyBot.exe` below
      2. Create a folder and move the .exe there
-     3. Run it!
+     3. Run it! (Click "Run anyway" if Windows warns you)
      
      ## 🔄 Updating
      
