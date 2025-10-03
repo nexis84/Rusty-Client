@@ -229,6 +229,12 @@ Write-Host "Copying installer scripts..." -ForegroundColor Yellow
 Copy-Item "Install.ps1" -Destination "$releaseFolder\Install.ps1"
 Copy-Item "Install.bat" -Destination "$releaseFolder\Install.bat"
 
+# Copy GUI installer if it exists
+if (Test-Path "installer_build\Install.exe") {
+    Write-Host "Copying GUI installer..." -ForegroundColor Yellow
+    Copy-Item "installer_build\Install.exe" -Destination "$releaseFolder\Install.exe"
+}
+
 # Create a launcher in root that runs the app from app folder
 Write-Host "Creating launcher script..." -ForegroundColor Yellow
 $launcherContent = @"

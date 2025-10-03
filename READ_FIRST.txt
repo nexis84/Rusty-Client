@@ -7,6 +7,19 @@ RustyBot is 100% safe and open source.
   EASY INSTALLATION (RECOMMENDED)
 ========================================
 
+**Option 1: GUI Installer (Easiest!)**
+
+1. Extract this ZIP anywhere (e.g., Downloads folder)
+
+2. Double-click "Install.exe" 
+   - Beautiful RustyBot-styled installer
+   - Easy step-by-step wizard
+   - Automatically handles Windows Defender
+   - Creates desktop shortcut
+   - No technical knowledge needed!
+
+**Option 2: Script Installer**
+
 1. Extract this ZIP anywhere (e.g., Downloads folder)
 
 2. Double-click "Install.bat"
