@@ -179,16 +179,16 @@ class FirstRunDialog(QDialog):
 
 def check_first_run():
     """Check if this is the first run (no user_config.json exists)"""
-    from config_manager import get_config_path
-    config_path = get_config_path()
+    from config_manager import _get_config_path
+    config_path = _get_config_path()
     user_config_path = config_path.parent / "user_config.json"
     return not user_config_path.exists()
 
 
 def save_user_channel(channel_name):
     """Save user's channel to user_config.json"""
-    from config_manager import get_config_path
-    config_path = get_config_path()
+    from config_manager import _get_config_path
+    config_path = _get_config_path()
     user_config_path = config_path.parent / "user_config.json"
     
     # Create directory if needed
@@ -209,8 +209,8 @@ def save_user_channel(channel_name):
 
 def load_user_channel():
     """Load user's channel from user_config.json"""
-    from config_manager import get_config_path
-    config_path = get_config_path()
+    from config_manager import _get_config_path
+    config_path = _get_config_path()
     user_config_path = config_path.parent / "user_config.json"
     
     if not user_config_path.exists():

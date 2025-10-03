@@ -4358,10 +4358,10 @@ if __name__ == '__main__':
     app.setStyleSheet(BASE_STYLESHEET)
     
     # Check for first run and show setup dialog
-    from first_run_setup import check_first_run, show_first_run_setup, save_user_channel
+    from first_run_setup import check_first_run, FirstRunDialog, save_user_channel
     if check_first_run():
         print("First run detected - showing setup dialog...")
-        channel_name = show_first_run_setup()
+        channel_name = FirstRunDialog.show_first_run_setup()
         if channel_name:
             save_user_channel(channel_name)
             print(f"✅ First run setup complete! Channel: {channel_name}")
