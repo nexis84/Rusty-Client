@@ -66,12 +66,43 @@ if ($LASTEXITCODE -eq 0) {
         Write-Host ""
         Write-Host "Executable created: dist\Main.exe" -ForegroundColor Cyan
         Write-Host "File size: $fileSizeMB MB" -ForegroundColor Cyan
-        Write-Host ""
-        Write-Host "The executable is ready for distribution!" -ForegroundColor Green
-        Write-Host ""
-        Write-Host "Note: This is a standalone build (folder-based distribution)" -ForegroundColor Yellow
-        Write-Host "Distribute the entire 'dist' folder to users" -ForegroundColor Yellow
     }
+    
+    # Clean up unnecessary files from distribution
+    Write-Host ""
+    Write-Host "Cleaning up unnecessary distribution files..." -ForegroundColor Yellow
+    
+    $distPath = "dist\Main.dist"
+    $filesToRemove = @(
+        "v8_context_snapshot.debug.bin",  # Debug symbols
+        "_bz2.pyd",                        # Unused compression
+        "_lzma.pyd",                       # Unused compression
+        "_wmi.pyd",                        # Unused WMI
+        "_multiprocessing.pyd",            # Using threading instead
+        "_overlapped.pyd"                  # Unused async I/O
+    )
+    
+    $cleanupRemoved = 0
+    $cleanupSaved = 0
+    
+    foreach ($file in $filesToRemove) {
+        $fullPath = Join-Path $distPath $file
+        if (Test-Path $fullPath) {
+            $size = (Get-Item $fullPath).Length
+            Remove-Item $fullPath -Force
+            $cleanupRemoved++
+            $cleanupSaved += $size
+        }
+    }
+    
+    $cleanupSavedMB = [math]::Round($cleanupSaved / 1MB, 2)
+    Write-Host "  Removed $cleanupRemoved files ($cleanupSavedMB MB saved)" -ForegroundColor Green
+    
+    Write-Host ""
+    Write-Host "The executable is ready for distribution!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Note: This is a standalone build (folder-based distribution)" -ForegroundColor Yellow
+    Write-Host "Distribute the entire 'dist' folder to users" -ForegroundColor Yellow
 } else {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Red

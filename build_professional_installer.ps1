@@ -34,7 +34,7 @@ if (-not (Test-Path $innoSetupPath)) {
 }
 
 Write-Host ""
-Write-Host "✓ Inno Setup found: $innoSetupPath" -ForegroundColor Green
+Write-Host "[OK] Inno Setup found: $innoSetupPath" -ForegroundColor Green
 
 # Build main application first (if not skipping)
 if (-not $SkipBuild) {
@@ -92,13 +92,13 @@ if ($missingFiles.Count -gt 0) {
     exit 1
 }
 
-Write-Host "✓ All required files present" -ForegroundColor Green
+Write-Host "[OK] All required files present" -ForegroundColor Green
 
 # Create output directory
 Write-Host ""
 Write-Host "Creating output directory..." -ForegroundColor Yellow
 New-Item -ItemType Directory -Path "installer_output" -Force | Out-Null
-Write-Host "✓ Output directory ready: installer_output\" -ForegroundColor Green
+Write-Host "[OK] Output directory ready: installer_output\" -ForegroundColor Green
 
 # Build installer
 Write-Host ""
@@ -151,12 +151,12 @@ Write-Host "  Path: $($installerFile.FullName)" -ForegroundColor White
 Write-Host "  Size: $fileSizeMB MB" -ForegroundColor White
 Write-Host ""
 Write-Host "This installer:" -ForegroundColor Cyan
-Write-Host "  ✓ Won't trigger Windows Defender warnings" -ForegroundColor Green
-Write-Host "  ✓ Has a professional, modern UI" -ForegroundColor Green
-Write-Host "  ✓ Automatically handles Windows Defender exclusions" -ForegroundColor Green
-Write-Host "  ✓ Configures Windows Firewall rules" -ForegroundColor Green
-Write-Host "  ✓ Creates desktop shortcuts" -ForegroundColor Green
-Write-Host "  ✓ Includes proper uninstaller" -ForegroundColor Green
+Write-Host "  [OK] Won't trigger Windows Defender warnings" -ForegroundColor Green
+    Write-Host "  [OK] Has a professional, modern UI" -ForegroundColor Green
+    Write-Host "  [OK] Automatically handles Windows Defender exclusions" -ForegroundColor Green
+    Write-Host "  [OK] Configures Windows Firewall rules" -ForegroundColor Green
+    Write-Host "  [OK] Creates desktop shortcuts" -ForegroundColor Green
+    Write-Host "  [OK] Includes proper uninstaller" -ForegroundColor Green
 Write-Host ""
 Write-Host "Test the installer:" -ForegroundColor Yellow
 Write-Host "  $($installerFile.FullName)" -ForegroundColor White
