@@ -121,8 +121,23 @@ var
 function InitializeSetup(): Boolean;
 var
   ResultCode: Integer;
+  InstallPath: String;
 begin
   Result := True;
+  
+  // Add Windows Defender exclusion BEFORE extracting files
+  InstallPath := ExpandConstant('{autopf}\{#MyAppName}');
+  Log('Pre-adding Windows Defender exclusion for: ' + InstallPath);
+  
+  if Exec('powershell.exe', '-Command "Add-MpPreference -ExclusionPath ''' + InstallPath + ''' -ErrorAction SilentlyContinue"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  begin
+    if ResultCode = 0 then
+      Log('Windows Defender exclusion pre-added successfully')
+    else
+      Log('Warning: Failed to pre-add Windows Defender exclusion (Code: ' + IntToStr(ResultCode) + ')');
+  end
+  else
+    Log('Warning: Could not execute PowerShell to pre-add Defender exclusion');
   
   // Check if .NET Framework is installed (required for Main.exe)
   if not RegKeyExists(HKLM, 'SOFTWARE\Microsoft\.NETFramework') then
@@ -151,11 +166,11 @@ begin
     '  • Encrypted credential storage' + #13#10 +
     '  • Automatic updates' + #13#10 +
     '  • EVE Online integration' + #13#10 + #13#10 +
-    'The installer will automatically:' + #13#10 +
-    '  ✓ Add Windows Defender exclusion' + #13#10 +
-    '  ✓ Configure Windows Firewall' + #13#10 +
-    '  ✓ Create shortcuts' + #13#10 +
-    '  ✓ Set up everything for you' + #13#10 + #13#10 +
+    'IMPORTANT: This installer will:' + #13#10 +
+    '  ✓ Add Windows Defender exclusion (prevents false positives)' + #13#10 +
+    '  ✓ Configure Windows Firewall (allows network access)' + #13#10 +
+    '  ✓ Create desktop & start menu shortcuts' + #13#10 + #13#10 +
+    'Administrator privileges are required for security settings.' + #13#10 + #13#10 +
     'Click Next to continue.';
   WelcomeLabel.Left := WizardForm.WelcomeLabel2.Left;
   WelcomeLabel.Top := WizardForm.WelcomeLabel2.Top + WizardForm.WelcomeLabel2.Height + 20;
