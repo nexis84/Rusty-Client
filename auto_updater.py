@@ -236,18 +236,15 @@ echo   RustyBot Auto-Update
 echo ========================================
 echo.
 echo Waiting for application to close...
+timeout /t 3 /nobreak >nul
+
+REM Kill any remaining Main.exe processes
+taskkill /F /IM Main.exe >nul 2>&1
+
+REM Wait a bit more for file handles to release
 timeout /t 2 /nobreak >nul
 
-:WAIT_LOOP
-tasklist /FI "IMAGENAME eq Main.exe" 2>NUL | find /I /N "Main.exe">NUL
-if "%ERRORLEVEL%"=="0" (
-    echo Still closing...
-    timeout /t 1 /nobreak >nul
-    goto WAIT_LOOP
-)
-
 echo Application closed. Proceeding with update...
-timeout /t 1 /nobreak >nul
 
 echo Creating backup...
 if exist "{backup_dir}" (
