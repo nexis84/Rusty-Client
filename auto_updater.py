@@ -101,16 +101,28 @@ class AutoUpdater:
             is_frozen = getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__')
             is_exe = sys.executable.lower().endswith('.exe') and 'python' not in os.path.basename(sys.executable).lower()
             
+            # Check if Main.exe exists in current directory or parent directory
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            main_exe_path = os.path.join(current_dir, 'Main.exe')
+            if not os.path.exists(main_exe_path):
+                # Try parent directory
+                main_exe_path = os.path.join(os.path.dirname(current_dir), 'Main.exe')
+            
+            has_main_exe = os.path.exists(main_exe_path)
+            
             print(f"DEBUG: sys.frozen = {getattr(sys, 'frozen', False)}")
             print(f"DEBUG: sys.__compiled__ = {hasattr(sys, '__compiled__')}")
             print(f"DEBUG: sys.executable = {sys.executable}")
             print(f"DEBUG: is_exe check = {is_exe}")
+            print(f"DEBUG: Main.exe found = {has_main_exe} at {main_exe_path if has_main_exe else 'N/A'}")
             
-            # Consider it frozen if either check passes
-            if is_frozen or is_exe:
-                # Running as executable
-                current_exe = sys.executable
+            # Consider it frozen if any check passes OR if Main.exe exists nearby
+            if is_frozen or is_exe or has_main_exe:
+                # Use Main.exe if found, otherwise use sys.executable
+                current_exe = main_exe_path if has_main_exe else sys.executable
                 current_dir = os.path.dirname(current_exe)
+                
+                print(f"DEBUG: Using exe path: {current_exe}")
                 
                 # Check if downloaded file is ZIP (folder distribution)
                 if downloaded_file.endswith('.zip'):
