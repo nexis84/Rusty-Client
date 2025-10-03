@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.4.0"
+CURRENT_VERSION = "1.4.1"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"

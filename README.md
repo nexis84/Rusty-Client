@@ -1,6 +1,6 @@
 # 🤖 RustyBot - EVE Online Twitch Giveaway Bot
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/nexis84/Rusty-Client/releases)
+[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://github.com/nexis84/Rusty-Client/releases)
 [![Python](https://img.shields.io/badge/python-3.10+-green.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
 
@@ -23,7 +23,7 @@ A feature-rich Twitch giveaway bot for EVE Online with advanced animations, soun
 
 1. **Download the installer:**
    - Visit [Releases](https://github.com/nexis84/Rusty-Client/releases/latest)
-   - Download `RustyBot_Setup_v1.4.0.exe`
+   - Download `RustyBot_Setup_v1.4.1.exe`
 
 2. **Run the installer:**
    - Double-click the downloaded file
@@ -101,7 +101,7 @@ TWITCH_CHANNEL=your_channel_name
 # Build the Windows installer (requires Inno Setup)
 .\build_professional_installer.ps1
 
-# Output: installer_output\RustyBot_Setup_v1.4.0.exe
+# Output: installer_output\RustyBot_Setup_v1.4.1.exe
 ```
 
 **Requirements:**
@@ -189,7 +189,11 @@ RustyBot/
 
 ## 📝 Version History
 
-### v1.4.0 (Current)
+### v1.4.1 (Current)
+- Test auto-update functionality
+- Minor improvements
+
+### v1.4.0
 - ✅ **NEW: Professional Windows installer** using Inno Setup
 - ✅ **No more Windows Defender issues**
 - ✅ One-click installation with automatic configuration
