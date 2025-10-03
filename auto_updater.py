@@ -97,12 +97,17 @@ class AutoUpdater:
         try:
             # Check if running as compiled executable
             # Nuitka sets __compiled__ attribute instead of sys.frozen
+            # Also check if sys.executable ends with .exe and isn't python.exe
             is_frozen = getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__')
+            is_exe = sys.executable.lower().endswith('.exe') and 'python' not in os.path.basename(sys.executable).lower()
+            
             print(f"DEBUG: sys.frozen = {getattr(sys, 'frozen', False)}")
             print(f"DEBUG: sys.__compiled__ = {hasattr(sys, '__compiled__')}")
             print(f"DEBUG: sys.executable = {sys.executable}")
+            print(f"DEBUG: is_exe check = {is_exe}")
             
-            if is_frozen:
+            # Consider it frozen if either check passes
+            if is_frozen or is_exe:
                 # Running as executable
                 current_exe = sys.executable
                 current_dir = os.path.dirname(current_exe)
