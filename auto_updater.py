@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.4.7"
+CURRENT_VERSION = "1.4.8"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"
@@ -232,19 +232,31 @@ exit
         script = f"""
 @echo off
 echo ========================================
-echo   RustyBot Auto-Update
+echo   RustyBot Auto-Update v1.4.8
 echo ========================================
 echo.
 echo Waiting for application to close...
 timeout /t 3 /nobreak >nul
 
-REM Kill any remaining Main.exe processes
+REM Force kill any Main.exe processes
+echo Terminating RustyBot...
 taskkill /F /IM Main.exe >nul 2>&1
+taskkill /F /IM QtWebEngineProcess.exe >nul 2>&1
 
-REM Wait a bit more for file handles to release
-timeout /t 2 /nobreak >nul
+REM Wait for Windows to release all file handles (critical!)
+echo Waiting for file handles to release...
+timeout /t 3 /nobreak >nul
 
-echo Application closed. Proceeding with update...
+REM Additional safety check - verify Main.exe is not running
+:CHECK_PROCESS
+tasklist /FI "IMAGENAME eq Main.exe" 2>NUL | find /I /N "Main.exe">NUL
+if "%ERRORLEVEL%"=="0" (
+    echo Still waiting for Main.exe to close...
+    timeout /t 1 /nobreak >nul
+    goto CHECK_PROCESS
+)
+
+echo All processes closed. Proceeding with update...
 
 echo Creating backup...
 if exist "{backup_dir}" (
