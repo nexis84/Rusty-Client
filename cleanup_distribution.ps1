@@ -16,8 +16,8 @@ $filesToRemove = @(
     "_bz2.pyd",                        # bzip2 compression - not used
     "_lzma.pyd",                       # LZMA compression - not used
     "_wmi.pyd",                        # Windows Management Instrumentation - not used
-    "_multiprocessing.pyd",            # Multiprocessing - not used (using threading)
-    "_overlapped.pyd"                  # Windows async I/O - not used
+    "_multiprocessing.pyd"             # Multiprocessing - not used (using threading)
+    # NOTE: _overlapped.pyd is REQUIRED by asyncio.windows_events - DO NOT REMOVE!
 )
 
 $totalSaved = 0

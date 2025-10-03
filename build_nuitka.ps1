@@ -78,8 +78,8 @@ if ($LASTEXITCODE -eq 0) {
         "_bz2.pyd",                        # Unused compression
         "_lzma.pyd",                       # Unused compression
         "_wmi.pyd",                        # Unused WMI
-        "_multiprocessing.pyd",            # Using threading instead
-        "_overlapped.pyd"                  # Unused async I/O
+        "_multiprocessing.pyd"             # Using threading instead
+        # NOTE: _overlapped.pyd is REQUIRED by asyncio - DO NOT REMOVE!
     )
     
     $cleanupRemoved = 0
