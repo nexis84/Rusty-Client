@@ -19,21 +19,28 @@ A feature-rich Twitch giveaway bot for EVE Online with advanced animations, soun
 
 ## 📥 Installation
 
-### For End Users (Recommended)
+### Professional One-Click Installer (Recommended)
 
-1. **Download the latest executable:**
+1. **Download the installer:**
    - Visit [Releases](https://github.com/nexis84/Rusty-Client/releases/latest)
-   - Download `RustyBot.exe`
-   
-2. **Run the application:**
-   - Create a folder (e.g., `C:\RustyBot\`)
-   - Move `RustyBot.exe` to that folder
-   - Double-click to run
+   - Download `RustyBot_Setup_v1.3.9.exe`
 
-3. **Updates:**
-   - The app automatically checks for updates on startup
-   - Click "Download & Install Update" when prompted
-   - That's it! The app handles everything
+2. **Run the installer:**
+   - Double-click the downloaded file
+   - Follow the professional setup wizard
+   - Choose installation location (default: `C:\Program Files\RustyBot`)
+   - Select optional desktop shortcut
+   - Click Install
+
+3. **Launch RustyBot:**
+   - Use the desktop shortcut (if created)
+   - Or: Start Menu → RustyBot
+
+**The installer automatically handles:**
+- ✅ Windows Defender exclusion
+- ✅ Windows Firewall configuration
+- ✅ All file placement
+- ✅ Desktop and Start Menu shortcuts
 
 ### For Developers
 
@@ -43,24 +50,28 @@ A feature-rich Twitch giveaway bot for EVE Online with advanced animations, soun
    cd Rusty-Client
    ```
 
-2. **Create virtual environment:**
+2. **Install dependencies:**
    ```bash
-   python -m venv .venv
-   .venv\Scripts\activate  # Windows
+   pip install nuitka pyqt6 twitchio
    ```
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+3. **Configure credentials:**
+   - Edit `secure.env` with your Twitch credentials
+   - Or use first-run setup dialog
 
-4. **Configure environment:**
-   - Copy `.env.example` to `.env`
-   - Add your Twitch credentials
-
-5. **Run the application:**
+4. **Run from source:**
    ```bash
    python Main.py
+   ```
+
+5. **Build executable:**
+   ```powershell
+   .\build_nuitka.ps1
+   ```
+
+6. **Build installer:**
+   ```powershell
+   .\build_professional_installer.ps1
    ```
 
 ## 🔧 Configuration
@@ -75,30 +86,33 @@ TWITCH_CHANNEL=your_channel_name
 
 ## 🏗️ Building from Source
 
-### Build Executable
+### Build Application
 
-1. **Install build dependencies:**
-   ```bash
-   pip install pyinstaller packaging
-   ```
+```powershell
+# Build the main executable
+.\build_nuitka.ps1
 
-2. **Run the build script:**
-   ```powershell
-   .\build.ps1
-   ```
+# Output: dist\Main.dist\Main.exe
+```
 
-3. **Find your executable:**
-   ```
-   dist\RustyBot\RustyBot.exe
-   ```
+### Build Professional Installer
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed build and release instructions.
+```powershell
+# Build the Windows installer (requires Inno Setup)
+.\build_professional_installer.ps1
+
+# Output: installer_output\RustyBot_Setup_v1.3.9.exe
+```
+
+**Requirements:**
+- Nuitka compiler
+- [Inno Setup 6](https://jrsoftware.org/isdl.php) (for installer)
+- PyQt6, TwitchIO
 
 ## 📖 Documentation
 
-- [Deployment Guide](DEPLOYMENT.md) - Building and releasing
-- [Requirements](REQUIREMENTS_IMPROVED.md) - Detailed requirements
-- [Asset Migration](docs/MIGRATION_ASSETS_v1.38.md) - Asset structure
+- [Secure Credentials Setup](SECURE_CREDENTIALS_SETUP.md) - How to configure Twitch credentials
+- [Asset Migration](docs/MIGRATION_ASSETS_v1.38.md) - Asset structure information
 - [Dependencies](docs/DEPENDENCIES.md) - Dependency information
 
 ## 🚀 Quick Start Guide
@@ -110,17 +124,14 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed build and release instructions.
 5. **Click "Draw Winner"** when ready
 6. **Winner confirmation** via chat or manual selection
 
-## 🔄 Auto-Update System
+## 🔄 Updates
 
-RustyBot includes an intelligent auto-update system:
+**Automatic updates coming in future version!**
 
-- ✅ Checks GitHub for new releases on startup
-- ✅ Shows release notes before updating
-- ✅ Downloads and installs updates automatically
-- ✅ Backs up current version before updating
-- ✅ Restarts app with new version
-
-**No technical knowledge required!** Just click update and go.
+For now, to update:
+1. Download the latest installer from [Releases](https://github.com/nexis84/Rusty-Client/releases/latest)
+2. Run the installer (it will update your existing installation)
+3. Your settings and credentials are preserved
 
 ## 🎮 EVE2Twitch Integration
 
@@ -135,19 +146,20 @@ RustyBot can verify EVE Online character names through EVE2Twitch:
 
 ```
 RustyBot/
-├── Main.py                    # Main application
-├── auto_updater.py            # Auto-update system
-├── update_dialog.py           # Update UI
-├── animation_manager.py       # Animation system
-├── sound_manager.py           # Sound effects
-├── ui_manager.py              # User interface
-├── config_manager.py          # Configuration
-├── RustyBot.spec              # Build configuration
-├── build.ps1                  # Build script
-├── assets/                    # Web animations
-├── sounds/                    # Sound effects
-├── Fonts/                     # Custom fonts
-└── tests/                     # Test utilities
+├── Main.py                           # Main application
+├── animation_manager.py              # Animation system
+├── sound_manager.py                  # Sound effects
+├── ui_manager.py                     # User interface
+├── config_manager.py                 # Configuration
+├── secure_env_loader.py              # Secure credentials
+├── first_run_setup.py                # First-run dialog
+├── build_nuitka.ps1                  # Build application
+├── build_professional_installer.ps1  # Build installer
+├── installer_improved.iss            # Inno Setup script
+├── assets/                           # Web animations
+├── sounds/                           # Sound effects
+├── Fonts/                            # Custom fonts
+└── dist/                             # Build output
 
 ```
 
@@ -160,33 +172,30 @@ RustyBot/
 
 ## 🐛 Troubleshooting
 
-### Update Issues
-- Ensure internet connection is active
-- Check firewall isn't blocking GitHub access
-- Try running as administrator (Windows)
-
-### Build Issues
-- Ensure all dependencies are installed
-- Check that `icon.ico` exists
-- Verify `assets/`, `sounds/`, `Fonts/` folders are present
+### Installation Issues
+- **Windows Defender warning**: The Inno Setup installer is trusted and safe. Click "More info" → "Run anyway" if prompted
+- **Installation fails**: Run installer as Administrator
+- **Can't find installed app**: Check Start Menu or installation folder
 
 ### Runtime Issues
-- Verify `.env` file has correct credentials
-- Check Twitch OAuth token is valid
-- Ensure Python 3.10+ is installed
+- **First run**: You'll be prompted to enter your Twitch channel name
+- **Connection issues**: Verify your internet connection
+- **Missing features**: Make sure you're running the latest version from [Releases](https://github.com/nexis84/Rusty-Client/releases/latest)
+
+### For Developers
+- Ensure Nuitka is installed: `pip install nuitka`
+- Verify all folders exist: `assets/`, `sounds/`, `Fonts/`
+- Check Python version: 3.10+ required
 
 ## 📝 Version History
 
 ### v1.3.9 (Current)
-- ✅ Auto-update functionality
-- ✅ GitHub releases integration
-- ✅ Build system improvements
-- ✅ Better error handling
-
-### v1.3.8
-- Prize management improvements
-- EVE2Twitch integration
-- UI/UX enhancements
+- ✅ **NEW: Professional Windows installer** using Inno Setup
+- ✅ **No more Windows Defender issues**
+- ✅ One-click installation with automatic configuration
+- ✅ Proper uninstaller included
+- ✅ Built with Nuitka for better performance
+- ✅ Improved security with automatic exclusions
 
 See [Releases](https://github.com/nexis84/Rusty-Client/releases) for full changelog.
 
@@ -195,9 +204,12 @@ See [Releases](https://github.com/nexis84/Rusty-Client/releases) for full change
 Contributions are welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Submit a pull request
+4. Test thoroughly
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
 ## � License
 

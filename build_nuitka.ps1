@@ -39,7 +39,7 @@ Write-Host ""
 
 python -m nuitka `
     --standalone `
-    --windows-disable-console `
+    --windows-console-mode=disable `
     --enable-plugin=pyqt6 `
     --include-module=secure_env_loader `
     --include-module=first_run_setup `
