@@ -4331,6 +4331,13 @@ if __name__ == '__main__':
     def show_main_and_finish_splash():
         if splash: splash.finish(window)
         print(f"DEBUG: Splash finished. Is window maximized? {window.isMaximized()}. Geometry: {window.geometry().x()},{window.geometry().y()},{window.geometry().width()}x{window.geometry().height()}")
+        
+        # Check for updates after splash screen
+        try:
+            from update_dialog import check_for_updates_with_dialog
+            QTimer.singleShot(1000, lambda: check_for_updates_with_dialog(window))
+        except Exception as e:
+            print(f"Update check error: {e}")
 
     QTimer.singleShot(200, show_main_and_finish_splash)
 

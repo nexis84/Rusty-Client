@@ -36,6 +36,14 @@ python-dotenv==1.0.0
 # HTTP library for ESI API calls and EVE2Twitch integration
 requests==2.32.4
 
+# ----------------------------------------------------------------------------
+# Auto-Update & Packaging
+# ----------------------------------------------------------------------------
+# Version comparison for auto-update functionality
+packaging>=21.0
+# PyInstaller for building standalone executables
+pyinstaller>=5.0
+
 # ============================================================================
 # Installation Instructions:
 # ============================================================================
