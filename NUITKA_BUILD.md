@@ -18,7 +18,7 @@ pip install nuitka ordered-set zstandard
 
 ## Building
 
-Simply run the build script:
+### Step 1: Build the Application
 
 ```powershell
 .\build_nuitka.ps1
@@ -27,14 +27,24 @@ Simply run the build script:
 The build process:
 1. **First build**: Takes 5-10 minutes (downloads MinGW GCC compiler)
 2. **Subsequent builds**: 3-5 minutes (uses cached compilation)
-3. **Output**: `RustyBot.exe` in the project root
+3. **Output**: `dist\Main.dist\` folder with all files
+
+### Step 2: Create Distribution Package
+
+```powershell
+.\create_package.ps1
+```
+
+This creates:
+- **Folder**: `release\RustyBot_v1.3.9_Standalone\` with all files
+- **ZIP**: `release\RustyBot_v1.3.9_Standalone.zip` (165 MB) - Upload this to GitHub!
 
 ## Build Output
 
-- `RustyBot.exe` - The final executable (distribute this)
+- `dist\Main.dist\` - Application folder with all DLLs and dependencies
+- `release\RustyBot_v1.3.9_Standalone.zip` - **Upload this to GitHub Releases**
+- `release\RustyBot_v1.3.9_Standalone\` - Extracted folder for testing
 - `Main.build/` - Build artifacts (ignored by git)
-- `Main.dist/` - Distribution folder (ignored by git)
-- `Main.onefile-build/` - Onefile temp folder (ignored by git)
 
 ## What's Included
 
@@ -85,11 +95,14 @@ The `build_nuitka.ps1` script:
 
 ## Deployment
 
-1. Build the executable: `.\build_nuitka.ps1`
-2. Test locally: `.\RustyBot.exe`
-3. Upload to GitHub Releases
-4. Users download and run (no installation needed)
-5. Auto-update feature checks for new releases
+1. Build the application: `.\build_nuitka.ps1`
+2. Create distribution package: `.\create_package.ps1`
+3. Test locally: `.\release\RustyBot_v1.3.9_Standalone\RustyBot.exe`
+4. Upload `RustyBot_v1.3.9_Standalone.zip` to GitHub Releases
+5. Users download, extract ZIP, and run RustyBot.exe
+6. Auto-update feature checks for new releases
+
+**Note**: Users need to extract the entire ZIP file. All DLL files and folders must stay together!
 
 ## Troubleshooting
 

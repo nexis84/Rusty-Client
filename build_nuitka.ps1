@@ -39,7 +39,6 @@ Write-Host ""
 
 python -m nuitka `
     --standalone `
-    --onefile `
     --windows-disable-console `
     --enable-plugin=pyqt6 `
     --include-data-dir=assets=assets `
@@ -47,12 +46,7 @@ python -m nuitka `
     --include-data-dir=Fonts=Fonts `
     --include-data-file=config.json=config.json `
     --include-data-file=.env=.env `
-    --company-name="RustyBot" `
-    --product-name="RustyBot" `
-    --file-version=1.3.9 `
-    --product-version=1.3.9 `
-    --file-description="RustyBot Twitch Giveaway Bot" `
-    --output-filename=RustyBot.exe `
+    --output-dir=dist `
     Main.py
 
 if ($LASTEXITCODE -eq 0) {
@@ -62,16 +56,17 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "========================================" -ForegroundColor Green
     
     # Show file size
-    if (Test-Path "Main.dist\RustyBot.exe") {
-        $fileSize = (Get-Item "Main.dist\RustyBot.exe").Length
+    if (Test-Path "dist\Main.exe") {
+        $fileSize = (Get-Item "dist\Main.exe").Length
         $fileSizeMB = [math]::Round($fileSize / 1MB, 2)
         Write-Host ""
-        Write-Host "Executable created: Main.dist\RustyBot.exe" -ForegroundColor Cyan
+        Write-Host "Executable created: dist\Main.exe" -ForegroundColor Cyan
         Write-Host "File size: $fileSizeMB MB" -ForegroundColor Cyan
         Write-Host ""
         Write-Host "The executable is ready for distribution!" -ForegroundColor Green
         Write-Host ""
-        Write-Host "Note: Nuitka output is in Main.dist folder" -ForegroundColor Yellow
+        Write-Host "Note: This is a standalone build (folder-based distribution)" -ForegroundColor Yellow
+        Write-Host "Distribute the entire 'dist' folder to users" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""

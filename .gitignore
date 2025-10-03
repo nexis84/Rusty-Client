@@ -41,6 +41,12 @@ Main.onefile-build/
 *.onefile-build/
 nuitka-crash-report.xml
 
+# Distribution packages
+release/
+installer_output/
+RustyBot.exe
+*.exe
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
