@@ -27,6 +27,7 @@ class AutoUpdater:
         self.current_version = current_version
         self.latest_version = None
         self.download_url = None
+        self.asset_name = None
         self.release_notes = None
         
     def check_for_updates(self):
@@ -39,10 +40,11 @@ class AutoUpdater:
             self.latest_version = release_data['tag_name'].lstrip('v')
             self.release_notes = release_data.get('body', 'No release notes available')
             
-            # Find the .exe asset
+            # Find the ZIP or EXE asset
             for asset in release_data.get('assets', []):
-                if asset['name'].endswith('.exe'):
+                if asset['name'].endswith('.zip') or asset['name'].endswith('.exe'):
                     self.download_url = asset['browser_download_url']
+                    self.asset_name = asset['name']
                     break
             
             # Compare versions
@@ -66,8 +68,8 @@ class AutoUpdater:
         try:
             # Create temp directory
             temp_dir = tempfile.mkdtemp(prefix="rustybot_update_")
-            exe_name = os.path.basename(self.download_url)
-            temp_exe_path = os.path.join(temp_dir, exe_name)
+            download_name = self.asset_name or os.path.basename(self.download_url)
+            temp_file_path = os.path.join(temp_dir, download_name)
             
             # Download with progress
             response = requests.get(self.download_url, stream=True, timeout=30)
@@ -76,7 +78,7 @@ class AutoUpdater:
             total_size = int(response.headers.get('content-length', 0))
             downloaded = 0
             
-            with open(temp_exe_path, 'wb') as f:
+            with open(temp_file_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
@@ -85,39 +87,86 @@ class AutoUpdater:
                             progress = int((downloaded / total_size) * 100)
                             progress_callback(progress)
             
-            return True, temp_exe_path
+            return True, temp_file_path
             
         except Exception as e:
             return False, f"Download failed: {str(e)}"
     
-    def apply_update(self, new_exe_path):
-        """Replace current executable with new version and restart"""
+    def apply_update(self, downloaded_file):
+        """Replace current executable/folder with new version and restart"""
         try:
             if getattr(sys, 'frozen', False):
                 # Running as executable
                 current_exe = sys.executable
-                backup_exe = current_exe + ".bak"
+                current_dir = os.path.dirname(current_exe)
                 
-                # Create backup
-                if os.path.exists(backup_exe):
-                    os.remove(backup_exe)
-                shutil.copy2(current_exe, backup_exe)
-                
-                # Create update script
-                if sys.platform == 'win32':
-                    update_script = self._create_windows_update_script(
-                        new_exe_path, current_exe, backup_exe
-                    )
-                    # Run update script and exit
-                    subprocess.Popen(update_script, shell=True)
-                    return True, "Update will complete after restart"
+                # Check if downloaded file is ZIP (folder distribution)
+                if downloaded_file.endswith('.zip'):
+                    return self._apply_zip_update(downloaded_file, current_dir, current_exe)
                 else:
-                    return False, "Auto-update only supported on Windows"
+                    # Single EXE update
+                    return self._apply_exe_update(downloaded_file, current_exe)
             else:
                 return False, "Auto-update only works with compiled executable"
                 
         except Exception as e:
             return False, f"Update failed: {str(e)}"
+    
+    def _apply_zip_update(self, zip_file, current_dir, current_exe):
+        """Apply update from ZIP file (folder distribution)"""
+        try:
+            # Extract ZIP to temp location
+            temp_extract_dir = tempfile.mkdtemp(prefix="rustybot_extract_")
+            
+            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                zip_ref.extractall(temp_extract_dir)
+            
+            # Find the extracted folder (usually named RustyBot_vX.X.X_Standalone)
+            extracted_folders = [f for f in os.listdir(temp_extract_dir) 
+                               if os.path.isdir(os.path.join(temp_extract_dir, f))]
+            
+            if not extracted_folders:
+                return False, "Invalid update package: no folder found in ZIP"
+            
+            new_app_dir = os.path.join(temp_extract_dir, extracted_folders[0])
+            
+            # Create update script for Windows
+            if sys.platform == 'win32':
+                update_script = self._create_windows_folder_update_script(
+                    new_app_dir, current_dir, current_exe
+                )
+                # Run update script and exit
+                subprocess.Popen(update_script, shell=True)
+                return True, "Update will complete after restart"
+            else:
+                return False, "Auto-update only supported on Windows"
+                
+        except Exception as e:
+            return False, f"Failed to apply ZIP update: {str(e)}"
+    
+    def _apply_exe_update(self, new_exe_path, current_exe):
+        """Apply single EXE update (legacy)"""
+        try:
+            backup_exe = current_exe + ".bak"
+            
+            # Create backup
+            if os.path.exists(backup_exe):
+                os.remove(backup_exe)
+            shutil.copy2(current_exe, backup_exe)
+            
+            # Create update script
+            if sys.platform == 'win32':
+                update_script = self._create_windows_update_script(
+                    new_exe_path, current_exe, backup_exe
+                )
+                # Run update script and exit
+                subprocess.Popen(update_script, shell=True)
+                return True, "Update will complete after restart"
+            else:
+                return False, "Auto-update only supported on Windows"
+                
+        except Exception as e:
+            return False, f"Failed to apply EXE update: {str(e)}"
     
     def _create_windows_update_script(self, new_exe, current_exe, backup_exe):
         """Create a Windows batch script to perform the update"""
@@ -147,6 +196,58 @@ del /F /Q "{backup_exe}" 2>nul
 exit
 """
         script_path = os.path.join(tempfile.gettempdir(), "rustybot_update.bat")
+        with open(script_path, 'w') as f:
+            f.write(script)
+        return script_path
+    
+    def _create_windows_folder_update_script(self, new_app_dir, current_dir, current_exe):
+        """Create a Windows batch script to update the entire folder"""
+        backup_dir = current_dir + "_backup"
+        script = f"""
+@echo off
+echo ========================================
+echo   RustyBot Auto-Update
+echo ========================================
+echo.
+echo Waiting for application to close...
+timeout /t 3 /nobreak >nul
+
+echo Creating backup...
+if exist "{backup_dir}" (
+    rmdir /S /Q "{backup_dir}"
+)
+mkdir "{backup_dir}"
+
+echo Backing up current installation...
+xcopy /E /I /Y /Q "{current_dir}" "{backup_dir}" >nul
+
+echo Applying update...
+xcopy /E /I /Y /Q "{new_app_dir}\*" "{current_dir}" >nul
+
+if errorlevel 1 (
+    echo.
+    echo Update failed! Restoring backup...
+    xcopy /E /I /Y /Q "{backup_dir}\*" "{current_dir}" >nul
+    echo Press any key to exit...
+    pause >nul
+    exit /b 1
+)
+
+echo Cleaning up...
+rmdir /S /Q "{backup_dir}" 2>nul
+rmdir /S /Q "{os.path.dirname(new_app_dir)}" 2>nul
+
+echo.
+echo ========================================
+echo   Update Complete!
+echo ========================================
+echo.
+echo Restarting RustyBot...
+timeout /t 2 /nobreak >nul
+start "" "{current_exe}"
+exit
+"""
+        script_path = os.path.join(tempfile.gettempdir(), "rustybot_folder_update.bat")
         with open(script_path, 'w') as f:
             f.write(script)
         return script_path
