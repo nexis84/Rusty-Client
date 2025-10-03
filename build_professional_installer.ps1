@@ -62,16 +62,9 @@ Write-Host ""
 Write-Host "Verifying required files..." -ForegroundColor Yellow
 
 $requiredFiles = @(
-    "Main.exe",
-    "Main.dist",
-    "RustyBot.vbs",
-    "RustyBot.bat",
-    "config.json",
-    "secure.env",
-    "README.md",
-    "assets",
-    "sounds",
-    "Fonts"
+    "dist\Main.dist\Main.exe",
+    "installer_improved.iss",
+    "icon.ico"
 )
 
 $missingFiles = @()

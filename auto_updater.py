@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.4.6"
+CURRENT_VERSION = "1.4.7"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"
@@ -236,7 +236,18 @@ echo   RustyBot Auto-Update
 echo ========================================
 echo.
 echo Waiting for application to close...
-timeout /t 3 /nobreak >nul
+timeout /t 2 /nobreak >nul
+
+:WAIT_LOOP
+tasklist /FI "IMAGENAME eq Main.exe" 2>NUL | find /I /N "Main.exe">NUL
+if "%ERRORLEVEL%"=="0" (
+    echo Still closing...
+    timeout /t 1 /nobreak >nul
+    goto WAIT_LOOP
+)
+
+echo Application closed. Proceeding with update...
+timeout /t 1 /nobreak >nul
 
 echo Creating backup...
 if exist "{backup_dir}" (
