@@ -223,6 +223,7 @@ $readmeContent | Out-File -FilePath "$releaseFolder\README.txt" -Encoding UTF8
 Write-Host "Copying Windows Defender instructions..." -ForegroundColor Yellow
 Copy-Item "READ_FIRST.txt" -Destination "$releaseFolder\READ_FIRST.txt"
 Copy-Item "WINDOWS_DEFENDER_INSTRUCTIONS.md" -Destination "$releaseFolder\WINDOWS_DEFENDER_INSTRUCTIONS.md"
+Copy-Item "INSTALLER_TROUBLESHOOTING.md" -Destination "$releaseFolder\INSTALLER_TROUBLESHOOTING.md"
 
 # Copy installer files
 Write-Host "Copying installer scripts..." -ForegroundColor Yellow
@@ -233,6 +234,7 @@ Copy-Item "Install.bat" -Destination "$releaseFolder\Install.bat"
 if (Test-Path "installer_build\Install.exe") {
     Write-Host "Copying GUI installer..." -ForegroundColor Yellow
     Copy-Item "installer_build\Install.exe" -Destination "$releaseFolder\Install.exe"
+    Copy-Item "Run_Installer.bat" -Destination "$releaseFolder\Run_Installer.bat"
 }
 
 # Create a launcher in root that runs the app from app folder
