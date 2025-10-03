@@ -171,11 +171,33 @@ def _get_config_path():
 
     print("WARNING (config_manager): Falling back to saving config next to script/executable.")
     try:
-        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-             base_path = Path(sys.executable).parent
+        if getattr(sys, 'frozen', False):
+            exe_dir = Path(sys.executable).parent
+            parent_dir = exe_dir.parent
+            
+            # Check parent directory first (for organized structure: root/config.json and root/app/RustyBot.exe)
+            parent_config = parent_dir / CONFIG_FILE
+            if parent_config.exists():
+                print(f"DEBUG (config_manager): Found config in parent directory: {parent_config}")
+                return parent_config
+            
+            # Try parent directory even if it doesn't exist yet (for new installs)
+            # This assumes app is in a subfolder like 'app'
+            if exe_dir.name.lower() == 'app':
+                fallback_path = parent_config
+                print(f"DEBUG (config_manager): Using parent config path (app folder detected): {fallback_path}")
+                return fallback_path
+            
+            # Fall back to exe directory
+            fallback_path = exe_dir / CONFIG_FILE
+            if hasattr(sys, '_MEIPASS'):
+                # PyInstaller compatibility - also check _MEIPASS
+                meipass_config = Path(sys._MEIPASS) / CONFIG_FILE
+                if meipass_config.exists():
+                    return meipass_config
         else:
-             base_path = Path(__file__).parent.resolve()
-        fallback_path = base_path / CONFIG_FILE
+            fallback_path = Path(__file__).parent.resolve() / CONFIG_FILE
+        
         print(f"DEBUG (config_manager): Using fallback config path: {fallback_path}")
         return fallback_path
     except Exception as e:

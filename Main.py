@@ -36,19 +36,26 @@ from twitchio.ext.commands import Bot
 from twitchio.ext.commands import Command
 
 # Load environment variables from .env file
-# When packaged with PyInstaller, look for .env in the bundle's data directory
+# When packaged with PyInstaller/Nuitka, look for .env in multiple locations
 if getattr(sys, 'frozen', False):
-    # Running as PyInstaller bundle
-    # PyInstaller creates a temp folder and stores path in _MEIPASS
-    if hasattr(sys, '_MEIPASS'):
-        app_dir = sys._MEIPASS
-    else:
-        app_dir = os.path.dirname(sys.executable)
+    # Running as compiled executable
+    # Check if we're in an 'app' subfolder (organized distribution)
+    exe_dir = os.path.dirname(sys.executable)
+    parent_dir = os.path.dirname(exe_dir)
+    
+    # Try parent directory first (for organized structure: root/.env and root/app/RustyBot.exe)
+    env_path = os.path.join(parent_dir, '.env')
+    if not os.path.exists(env_path):
+        # Fall back to exe directory (for flat structure)
+        env_path = os.path.join(exe_dir, '.env')
+    
+    # Also try _MEIPASS for PyInstaller compatibility
+    if not os.path.exists(env_path) and hasattr(sys, '_MEIPASS'):
+        env_path = os.path.join(sys._MEIPASS, '.env')
 else:
     # Running as normal Python script
-    app_dir = os.path.dirname(__file__)
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
 
-env_path = os.path.join(app_dir, '.env')
 print(f"Looking for .env file at: {env_path}")
 print(f"File exists: {os.path.exists(env_path)}")
 load_dotenv(env_path, override=True)

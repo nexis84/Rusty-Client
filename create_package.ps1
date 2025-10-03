@@ -23,15 +23,33 @@ if (Test-Path "release") {
 }
 New-Item -ItemType Directory -Force -Path $releaseFolder | Out-Null
 
-# Copy the application
-Write-Host "Copying application files..." -ForegroundColor Yellow
-Copy-Item -Path "dist\Main.dist\*" -Destination $releaseFolder -Recurse
+# Copy the application with organized structure
+Write-Host "Copying and organizing application files..." -ForegroundColor Yellow
 
-# Rename Main.exe to RustyBot.exe
-if (Test-Path "$releaseFolder\Main.exe") {
-    Rename-Item -Path "$releaseFolder\Main.exe" -NewName "RustyBot.exe"
+# Strategy: Keep everything Nuitka needs in an 'app' subfolder
+# Put only the launcher and user files in root for clean appearance
+
+# Create organized folder structure
+$appFolder = "$releaseFolder\app"
+New-Item -ItemType Directory -Force -Path $appFolder | Out-Null
+
+# Copy everything from Nuitka build to app folder
+Write-Host "Copying Nuitka build to app folder..." -ForegroundColor Yellow
+Copy-Item -Path "dist\Main.dist\*" -Destination $appFolder -Recurse
+
+# Rename Main.exe to RustyBot.exe in app folder
+if (Test-Path "$appFolder\Main.exe") {
+    Rename-Item -Path "$appFolder\Main.exe" -NewName "RustyBot.exe"
     Write-Host "Renamed Main.exe to RustyBot.exe" -ForegroundColor Green
 }
+
+# Copy user-editable files to root for easy access
+Write-Host "Copying user files to root for easy access..." -ForegroundColor Yellow
+Copy-Item -Path "$appFolder\config.json" -Destination $releaseFolder -ErrorAction SilentlyContinue
+Copy-Item -Path "$appFolder\.env" -Destination $releaseFolder -ErrorAction SilentlyContinue
+
+# Create shortcuts to user folders in root (optional)
+# This keeps root clean while making assets accessible
 
 # Create README for users
 Write-Host "Creating README..." -ForegroundColor Yellow
@@ -40,19 +58,39 @@ $readmeContent = @"
 
 ## 🚀 Quick Start
 
-1. **Run RustyBot.exe** - That's it!
-2. The application will check for updates automatically
-3. Configure your settings in the Options menu
+**Double-click `RustyBot.vbs`** - Launches RustyBot cleanly (no console window)
 
-## 📁 What's Included
+OR
 
-- **RustyBot.exe** - Main application
-- **All DLL files** - Required dependencies (PyQt6, Python runtime, etc.)
-- **assets/** - Web animations and UI resources
-- **sounds/** - Sound effects for notifications
-- **Fonts/** - Custom fonts
-- **config.json** - Configuration file
-- **.env** - Twitch credentials (already configured)
+**Double-click `RustyBot.bat`** - Launches RustyBot (shows brief console message)
+
+## 📁 Folder Structure
+
+### Root Folder (What you see)
+- **RustyBot.vbs** - Main launcher (recommended - silent launch)
+- **RustyBot.bat** - Alternative launcher (shows console briefly)
+- **config.json** - Your settings (edit here)
+- **.env** - Twitch credentials (edit here)
+- **README.txt** - This file
+- **app/** - Application files (all the messy stuff is here!)
+
+### App Folder (Don't touch unless needed)
+The `app` folder contains:
+- RustyBot.exe - The actual application
+- All Python libraries and dependencies
+- All DLL files (277 files!)
+- assets/, sounds/, Fonts/ folders
+
+**💡 Tip**: You don't need to go into the app folder. Just use the launchers in the root!
+
+## ⚙️ Configuration
+
+**To change settings:**
+1. Edit `config.json` in the root folder
+2. Edit `.env` in the root folder for Twitch credentials
+3. Restart RustyBot
+
+The app will automatically read your settings from the root folder!
 
 ## ⚠️ Important Notes
 
@@ -72,9 +110,11 @@ The application is completely safe:
    - Exclusions → Add or remove exclusions
    - Add this folder
 
-### First Time Setup
-The app is already configured with your Twitch credentials.
-Just run RustyBot.exe and you're ready to go!
+### Keep Files Together
+**DO NOT** move files out of their folders!
+- Keep the `app` folder with the root folder
+- Don't separate RustyBot.exe from its DLL files
+- Extract the entire ZIP before running
 
 ## 🔄 Updates
 
@@ -82,30 +122,44 @@ The app checks for updates automatically on startup.
 When a new version is available, you'll see a notification.
 Click "Download & Install" to update automatically!
 
-## 📝 Configuration
+## 📝 Settings Files
 
-All settings can be changed in the Options menu:
-- Sound effects volume
-- Animation speeds
-- UI colors and themes
-- Twitch connection settings
+Edit these files in the ROOT folder (not in app folder):
+
+- **config.json** - Application settings
+  - Sound volumes
+  - Animation speeds
+  - UI colors
+  
+- **.env** - Twitch connection
+  - Your bot credentials
+  - Channel names
+  - API tokens
 
 ## 🐛 Troubleshooting
 
 ### "Application won't start"
 - Make sure you extracted ALL files from the ZIP
-- Don't move RustyBot.exe out of this folder (it needs the DLL files)
+- Don't move files between folders
 - Try running as Administrator
+- Use RustyBot.vbs instead of RustyBot.bat
+
+### "Can't find config.json"
+- Make sure config.json is in the ROOT folder (same level as the launchers)
+- Don't move or rename it
+
+### "Missing DLL" Error
+- Make sure the `app` folder is present and hasn't been moved
+- Re-extract the ZIP file if something is missing
 
 ### "No sound"
-- Check Options → Sound settings
+- Check config.json in root folder
 - Verify your system volume isn't muted
-- Make sure the sounds folder is present
 
 ### "Can't connect to Twitch"
+- Edit .env in root folder
 - Check your internet connection
-- Verify .env file has correct credentials
-- Check Twitch API status
+- Verify Twitch credentials are correct
 
 ## 📞 Support
 
@@ -116,7 +170,10 @@ All settings can be changed in the Options menu:
 
 Version: 1.3.9
 Build Date: $(Get-Date -Format "yyyy-MM-dd")
-Build Type: Nuitka Standalone (Folder Distribution)
+Build Type: Nuitka Standalone (Organized Structure)
+
+**Root folder contains**: User files and launchers (clean!)
+**App folder contains**: All technical files (organized!)
 
 ---
 
@@ -125,15 +182,32 @@ Build Type: Nuitka Standalone (Folder Distribution)
 
 $readmeContent | Out-File -FilePath "$releaseFolder\README.txt" -Encoding UTF8
 
-# Create a simple launcher batch file as alternative
+# Create a launcher in root that runs the app from app folder
 Write-Host "Creating launcher script..." -ForegroundColor Yellow
 $launcherContent = @"
 @echo off
+REM RustyBot Launcher
+REM This launches RustyBot from the app folder
+
 echo Starting RustyBot...
 echo.
-start "" "%~dp0RustyBot.exe"
+
+REM Run RustyBot from app folder
+cd /d "%~dp0app"
+start "" "%~dp0app\RustyBot.exe"
+cd /d "%~dp0"
 "@
-$launcherContent | Out-File -FilePath "$releaseFolder\Start_RustyBot.bat" -Encoding ASCII
+$launcherContent | Out-File -FilePath "$releaseFolder\RustyBot.bat" -Encoding ASCII
+
+# Also create a direct EXE launcher using PowerShell
+Write-Host "Creating RustyBot.vbs launcher (silent, no console)..." -ForegroundColor Yellow
+$vbsContent = @"
+Set WshShell = CreateObject("WScript.Shell")
+WshShell.CurrentDirectory = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
+WshShell.Run Chr(34) & WshShell.CurrentDirectory & "\app\RustyBot.exe" & Chr(34), 0
+Set WshShell = Nothing
+"@
+$vbsContent | Out-File -FilePath "$releaseFolder\RustyBot.vbs" -Encoding ASCII
 
 # Calculate folder size
 $folderSize = (Get-ChildItem -Path $releaseFolder -Recurse | Measure-Object -Property Length -Sum).Sum
