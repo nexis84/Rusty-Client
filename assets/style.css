@@ -1,0 +1,1155 @@
+/* --- Triglavian Conduit Reveal Styling (Mode 7) --- */
+#trig-conduit-reveal-mode {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.trig-conduit-nodes-container {
+    position: relative;
+    width: var(--trig-conduit-nodes-container-size);
+    height: var(--trig-conduit-nodes-container-size);
+    margin-bottom: 3vmin;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.5s ease-out var(--trig-conduit-appear-delay), transform 0.5s ease-out var(--trig-conduit-appear-delay);
+}
+#trig-conduit-reveal-mode.visible .trig-conduit-nodes-container.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* NEW: SVG Overlay for lines */
+.trig-conduit-svg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    overflow: visible;
+}
+
+/* NEW: Conduit line styling */
+.trig-conduit-line {
+    stroke: var(--trig-cyan);
+    stroke-width: var(--node-path-line-width);
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.15;
+    stroke-dasharray: 100%;
+    stroke-dashoffset: 100%;
+    transition: stroke-dashoffset 0.4s cubic-bezier(0.6, 0, 0.4, 1), opacity 0.4s ease-out;
+    filter: drop-shadow(0 0 0.5vmin var(--node-path-line-glow-color));
+}
+
+.trig-conduit-line.visible {
+    opacity: 0.8;
+    stroke-dashoffset: 0;
+}
+
+
+.trig-conduit-node {
+    position: absolute;
+    width: var(--trig-conduit-node-size);
+    height: var(--trig-conduit-node-size);
+    background-color: var(--trig-conduit-node-bg);
+    border: var(--trig-conduit-node-border-width) solid var(--trig-conduit-node-border-color);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border-radius: 0;
+    transform-origin: center center;
+    transition: background-color 0.3s ease-out, border-color 0.3s ease-out, transform 0.4s ease-out, box-shadow 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+    transform: translate(var(--node-lean-x, 0px), var(--node-lean-y, 0px)) rotate(var(--node-rotation, 0deg)) rotate(var(--node-lean-rot, 0deg)) scale(0.5);
+    box-shadow: 0 0 0px 0px transparent;
+}
+
+.trig-conduit-node.visible {
+    opacity: 1;
+    transform: translate(var(--node-lean-x, 0px), var(--node-lean-y, 0px)) rotate(var(--node-rotation, 0deg)) rotate(var(--node-lean-rot, 0deg)) scale(1);
+}
+
+@keyframes trigConduitNodePulse {
+    0% {
+        transform: translate(var(--node-lean-x, 0px), var(--node-lean-y, 0px)) rotate(var(--node-rotation, 0deg)) rotate(var(--node-lean-rot, 0deg)) scale(1);
+        box-shadow: 0 0 1vmin 0.2vmin var(--trig-conduit-node-border-color);
+        background-color: var(--trig-conduit-node-bg);
+        border-color: var(--trig-conduit-node-border-color);
+    }
+    30% {
+        transform: translate(var(--node-lean-x, 0px), var(--node-lean-y, 0px)) rotate(var(--node-rotation, 0deg)) rotate(var(--node-lean-rot, 0deg)) scale(1.25);
+        box-shadow: 0 0 3vmin 0.8vmin var(--trig-conduit-node-pulse-glow);
+        background-color: var(--trig-conduit-node-active-bg);
+        border-color: var(--trig-conduit-node-active-border-color);
+    }
+    60% {
+        transform: translate(var(--node-lean-x, 0px), var(--node-lean-y, 0px)) rotate(var(--node-rotation, 0deg)) rotate(var(--node-lean-rot, 0deg)) scale(1.15);
+        box-shadow: 0 0 2.5vmin 0.6vmin var(--trig-conduit-node-pulse-glow);
+        background-color: var(--trig-conduit-node-active-bg);
+        border-color: var(--trig-conduit-node-active-border-color);
+    }
+    100% {
+        transform: translate(var(--node-lean-x, 0px), var(--node-lean-y, 0px)) rotate(var(--node-rotation, 0deg)) rotate(var(--node-lean-rot, 0deg)) scale(1.05);
+        box-shadow: 0 0 1.5vmin 0.3vmin var(--trig-conduit-node-pulse-glow);
+        background-color: var(--trig-conduit-node-active-bg);
+        border-color: var(--trig-conduit-node-active-border-color);
+    }
+}
+
+.trig-conduit-node.active {
+    animation: trigConduitNodePulse var(--trig-conduit-pulse-anim-duration-ms, 1000ms) ease-in-out infinite;
+}
+
+@keyframes finalConduitPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.trig-conduit-nodes-container.final-pulse-effect .trig-conduit-node.visible {
+    animation: finalConduitPulse 1s ease-in-out 2;
+}
+
+.trig-conduit-winner-display {
+/* ... (existing styles) ... */
+}
+/* Central conduit core */
+.trig-conduit-core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--trig-conduit-node-size) * 1.2);
+    height: calc(var(--trig-conduit-node-size) * 1.2);
+    border-radius: 50%;
+    /* Strong red-centered glow with bluish rim for contrast */
+    background: radial-gradient(circle at 50% 45%, var(--trig-beam-inner), rgba(255,30,10,0.25) 40%, rgba(0,0,0,0.2) 70%), radial-gradient(circle at 25% 25%, rgba(255,120,100,0.08), transparent 50%);
+    border: calc(var(--trig-conduit-node-border-width) / 1.2) solid rgba(255,80,60,0.06);
+    box-shadow: 0 0 2.5vmin 0.6vmin var(--trig-beam-glow), 0 0 1.2vmin 0.35vmin rgba(255,140,120,0.18) inset;
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 0.6s ease-out, transform 1.0s cubic-bezier(.2,.9,.2,1);
+}
+.trig-conduit-nodes-container.visible .trig-conduit-core { opacity: 1; }
+
+/* Moving energy orb (elongated streak-style to simulate motion blur) */
+.conduit-orb {
+    position: absolute;
+    width: 10px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,200,180,0.9) 20%, var(--trig-beam-inner) 60%, rgba(255,40,10,0.8) 100%);
+    box-shadow: 0 0 2vmin 0.6vmin rgba(255,80,60,0.22), 0 0 0.6vmin 0.15vmin rgba(255,255,255,0.8) inset;
+    transform: translate(0,0) rotate(0deg) scale(1);
+    transition: transform 0.8s cubic-bezier(.15,.9,.25,1), opacity 0.35s ease-out;
+    opacity: 0.98;
+    z-index: 6;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+/* Streak effect: when orb has class .streak, make the trail more pronounced */
+.conduit-orb.streak {
+    filter: blur(1.2px);
+    opacity: 0.95;
+}
+
+/* Trig conduit arms (Y-shaped beams) */
+.trig-conduit-arm {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 55%;
+    height: 8%;
+    transform-origin: 50% 50%;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.0;
+    transition: opacity 0.6s ease-out, transform 0.8s cubic-bezier(.2,.9,.2,1);
+}
+.trig-conduit-arm::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 6px;
+    width: 100%;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, transparent 0%, rgba(255,40,10,0.0) 20%, var(--trig-beam-inner) 60%, var(--trig-beam-red) 100%);
+    filter: blur(1.2px) drop-shadow(0 0 1vmin var(--trig-beam-glow));
+    mix-blend-mode: screen;
+    border-radius: 6px;
+}
+.trig-conduit-arm.visible { opacity: 1; }
+
+/* Darken and add smoky background vignette for mood */
+.animation-content::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(40,30,30,0.0) 30%, rgba(10,6,6,0.55) 80%);
+    z-index: 0;
+}
+
+/* letter arrived visual state */
+.trig-conduit-winner-display .letter-arrived {
+    color: var(--trig-electric-blue);
+    text-shadow: 0 0 0.8vmin rgba(135,206,250,0.6);
+}
+
+/* --- Spark Animation for Triglavian Box Reveal --- */
+.triglavian-sparks {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+    z-index: 10;
+}
+.triglavian-spark {
+    position: absolute;
+    width: 6px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--trig-cyan), var(--trig-yellow));
+    border-radius: 2px;
+    opacity: 0.85;
+    transform: scaleX(1.2);
+    animation: spark-fly 0.5s linear forwards;
+}
+@keyframes spark-fly {
+    0% { opacity: 1; transform: translate(0,0) scaleX(1.2) rotate(0deg); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--spark-x), var(--spark-y)) scaleX(0.7) rotate(var(--spark-rot)); }
+}
+.triglavian-box.showing-reveal { position: relative; overflow: visible; }
+/* START style.css */
+
+/* --- Font Definitions --- */
+@font-face { font-family: 'Shentox-SemiBold'; src: url('Shentox-SemiBold.ttf') format('truetype'); font-weight: 600; font-style: normal; }
+@font-face { font-family: 'Triglavian - Complete Regular'; src: url('triglavian-complete.otf') format('opentype'); font-weight: normal; font-style: normal; }
+
+
+/* --- Color Palette --- */
+:root {
+    /* Base Colors */
+    --trig-cyan: #4af1f2; --trig-white: #ffffff; --trig-dark: #05080a; --trig-dark-blue: #0a2845; --trig-grey: #9099a1; --trig-cyan-bright: #c0ffff; --trig-red: #d4351e; --trig-yellow: #f2d44a;
+    /* Arm / beam colors for Trig Conduit (game-like red) */
+    --trig-beam-red: #ff2a1a; --trig-beam-inner: rgba(255,80,60,0.95); --trig-beam-glow: rgba(255,60,40,0.18);
+    --trig-electric-blue: #87CEFA; /* Lighter blue for electric feel */
+
+    /* --- SCALED DIMENSIONS --- */
+
+    /* Box Reveal */
+    --box-pulse-glow: rgba(100, 255, 255, 0.85);
+    --box-width: clamp(35px, 5vmin, 70px);
+    --box-height: clamp(40px, 6vmin, 80px);
+    --box-margin: 0.5vmin;
+    --box-font-size: clamp(14px, 2.8vmin, 30px);
+    --box-border-width: max(1px, 0.2vmin);
+    --boxes-row-max-width: clamp(320px, 75vw, 1600px);
+
+    /* Countdown */
+    --countdown-size: clamp(80px, 10vmin, 160px);
+    --countdown-border: clamp(3px, 0.7vmin, 10px);
+    --countdown-font-size: clamp(18px, 3vmin, 36px);
+    --countdown-yellow: var(--trig-yellow); --countdown-red: var(--trig-red); --countdown-track-color: #2a3b4d; --countdown-text-color: var(--trig-white);
+    --countdown-reveal-delay: 0.3s; --countdown-reveal-duration: 0.5s;
+
+    /* List Scroll */
+    --list-max-width-px: 700px;
+    --list-height: clamp(180px, 30vmin, 450px);
+    --list-item-height: clamp(30px, 5.5vmin, 65px);
+    --list-font-size: clamp(12px, 1.8vmin, 24px);
+    --list-item-margin: 0.5vmin;
+    --list-padding: 1.5vmin;
+    --list-winner-font-size: clamp(16px, 2.6vmin, 32px);
+    --list-winner-padding: 1.5vmin 3.5vmin;
+    --list-item-color: var(--trig-grey); --list-active-item-color: var(--trig-white); --list-pointer-color: var(--trig-cyan);
+    --list-winner-bg: #080c10; --list-winner-text-color: var(--trig-yellow);
+    --list-shadow: rgba(0, 0, 0, 0.3); --list-fade-color: var(--trig-dark);
+    --list-perspective: 800px;
+    --list-rotateX: 10deg;
+    --list-glow-color: rgba(74, 241, 242, 0.2);
+    --list-bg-gradient-start: rgba(10, 40, 69, 0.3);
+    --list-bg-gradient-end: rgba(5, 8, 10, 0.5);
+    --list-edge-fade-height-multiplier: 1.5;
+    /* NEW: List Lights */
+    --list-light-size: clamp(10px, 2vmin, 20px);
+    --list-light-margin: clamp(3px, 0.6vmin, 6px);
+    --list-light-border-width: max(1px, 0.15vmin);
+    --list-light-color-on: var(--trig-yellow);
+    --list-light-glow-on: rgba(242, 212, 74, 0.7);
+    --list-light-color-off: #2a3b4d; /* Darker, dimmer */
+    --list-light-color-dim: #50667e; /* Intermediate dim state for flashing */
+    --list-lights-indicator-margin-bottom: 1.5vmin;
+
+    /* Triglavian Translation */
+    --trig-box-count: 5;
+    --trig-box-width: clamp(40px, 6.5vmin, 85px);
+    --trig-box-height: clamp(45px, 7.5vmin, 95px);
+    --trig-box-margin: 0.6vmin;
+    --trig-box-font-size: clamp(20px, 4vmin, 48px);
+    --trig-box-border-width: max(1px, 0.25vmin);
+    --trig-winner-font-size: clamp(18px, 3.3vmin, 40px);
+    --trig-winner-padding: 1.5vmin 3.5vmin;
+    --trig-winner-letter-spacing: 0.25em;
+    --trig-winner-min-height: calc(var(--trig-winner-font-size) + (2 * var(--trig-winner-padding)) + (2 * var(--trig-box-border-width)));
+    --trig-winner-bg: #080c10; --trig-winner-text-color: var(--trig-yellow);
+    --trig-temp-reveal-font-size: clamp(18px, 3.5vmin, 42px);
+
+    /* Node Path Reveal */
+    --node-path-grid-max-width: clamp(320px, 60vmin, 850px);
+    --node-path-grid-aspect-ratio: 0.9;
+    --node-path-node-size: clamp(18px, 3vmin, 40px);
+    --node-path-node-border: max(1px, 0.18vmin);
+    --node-path-node-color-empty: rgba(135, 206, 250, 0.15);
+    --node-path-node-color-path: var(--trig-electric-blue);
+    --node-path-node-color-target: var(--trig-yellow);
+    --node-path-node-color-active: var(--trig-white);
+    --node-path-line-color: var(--trig-electric-blue);
+    --node-path-line-width: max(1px, 0.25vmin);
+    --node-path-line-glow-color: rgba(135, 206, 250, 0.7);
+    --node-path-line-dash-length: 0.6vmin;
+    --node-path-reveal-step-duration: 120ms;
+    --node-path-winner-font-size: clamp(16px, 2.6vmin, 32px);
+    --node-path-winner-padding: 1.5vmin 3.5vmin;
+    --node-path-winner-bg: #080c10;
+    --node-path-winner-text-color: var(--trig-yellow);
+    --node-path-winner-reveal-delay: 250ms;
+    --node-path-node-pulse-glow: rgba(220, 220, 255, 0.9);
+    --node-path-grid-gap: 0.5vmin;
+
+    /* Triglavian Conduit Reveal */
+    --trig-conduit-nodes-container-size: clamp(250px, 45vmin, 550px);
+    --trig-conduit-node-count: 7;
+    --trig-conduit-node-size: clamp(30px, 5.5vmin, 65px);
+    --trig-conduit-node-border-width: max(1px, 0.2vmin);
+    --trig-conduit-node-bg: var(--trig-dark-blue);
+    --trig-conduit-node-border-color: var(--trig-cyan);
+    --trig-conduit-node-active-bg: var(--trig-cyan); /* Bright background when active */
+    --trig-conduit-node-active-border-color: var(--trig-cyan-bright);
+    --trig-conduit-node-pulse-glow: var(--trig-cyan-bright);
+    --trig-conduit-pulse-anim-duration-ms: 1000ms; /* Duration for CSS pulse */
+    --trig-conduit-winner-display-font-size: clamp(20px, 4vmin, 48px);
+    --trig-conduit-winner-display-padding: 1.5vmin 2vmin;
+    --trig-conduit-winner-letter-spacing: 0.1em;
+    --trig-conduit-winner-bg: rgba(8, 12, 16, 0.7);
+    --trig-conduit-winner-text-color: var(--trig-yellow);
+    --trig-conduit-winner-placeholder-color: var(--trig-grey);
+    --trig-conduit-appear-delay: 100ms;
+    --trig-conduit-node-appear-stagger: 80ms;
+    /* Step durations for JS are in OPTIONS block in script.js */
+    --trig-conduit-countdown-delay: 600ms;
+
+    /* Network Background (used by network_animation.js) */
+    --network-node-color: rgba(135, 206, 250, 0.35);
+    --network-link-color: rgba(135, 206, 250, 0.45);
+    --network-link-pulse-color: rgba(200, 240, 255, 0.9);
+    --network-link-fade-to-color: var(--trig-red);
+
+    /* Background Lists */
+    --bg-list-width: 20vw;
+    --bg-list-item-height: 3.8vh;
+    --bg-list-font-size: clamp(11px, calc(0.8vw + 0.5vh), 18px);
+    --bg-list-max-font-size: 18px;
+    --bg-list-min-font-size: 11px;
+    --bg-list-color: rgba(144, 153, 161, 0.4);
+    --bg-list-trig-color: rgba(74, 241, 242, 0.4);
+    --bg-list-scroll-duration: 40s;
+    --bg-list-gap: 2vw;
+    --bg-list-top-offset: 5%;
+    --bg-list-bottom-offset: 5%;
+
+    /* Layout Adjustment */
+    --adjustable-border-color: rgba(255, 255, 0, 0.6);
+    --adjustable-border-style: 2px dashed var(--adjustable-border-color);
+
+    /* === Triglavian Code Reveal Specific === */
+    --trig-code-participants-height: clamp(300px, 60vh, 700px); 
+    --trig-code-participants-width: clamp(300px, 60vw, 700px);
+    --trig-code-participant-item-height: clamp(28px, 3.5vh, 45px);
+    --trig-code-participant-font-size: clamp(12px, 1.5vmin, 20px);
+    --trig-code-participant-name-color: var(--trig-grey);
+    --trig-code-participant-code-color: var(--trig-cyan);
+    --trig-code-participant-eliminated-color: rgba(144, 153, 161, 0.2);
+    --trig-code-participant-eliminated-code-color: rgba(74, 241, 242, 0.15);
+    --trig-code-winner-code-font-size: clamp(20px, 3.5vmin, 48px);
+    --trig-code-winner-code-letter-spacing: 0.15em;
+    --trig-code-winner-code-padding: 1.2vmin 2vmin;
+    --trig-code-winner-code-bg: rgba(10, 40, 69, 0.6);
+    --trig-code-winner-code-border-color: var(--trig-cyan);
+    --trig-code-winner-name-font-size: clamp(18px, 3vmin, 36px);
+    --trig-code-winner-name-padding: 1vmin 2vmin;
+    --trig-code-winner-name-bg: #080c10;
+    --trig-code-winner-name-text-color: var(--trig-yellow);
+    --trig-code-reveal-step-duration: 300ms;
+    --trig-code-elimination-duration: 0.4s;
+    --trig-code-highlight-color: var(--trig-yellow);
+    --trig-code-matching-char-color: var(--trig-yellow);
+    --trig-code-placeholder-char-color: rgba(144, 153, 161, 0.5);
+    --trig-code-final-two-pause-ms: 3000ms; /* For JS logic, not direct CSS */
+}
+
+/* --- General Styling --- */
+html { background-color: var(--trig-dark); color: var(--trig-grey); height: 100%; box-sizing: border-box; font-size: 16px; }
+*, *:before, *:after { box-sizing: inherit; }
+body { background-color: var(--trig-dark); color: var(--trig-grey); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: sans-serif; overflow: hidden; position: relative; }
+
+/* --- Background Canvas Styling --- */
+.background-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+/* --- Main Container Styling --- */
+.container { width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; position: relative; z-index: 5; padding-top: 5vh; padding-bottom: 3vh; padding-left: 1.5vmin; padding-right: 1.5vmin; min-height: 0; height: 100%; background-color: transparent; }
+
+/* --- Background Lists Styling (SCALED) --- */
+.background-list { position: absolute; top: var(--bg-list-top-offset); bottom: var(--bg-list-bottom-offset); width: var(--bg-list-width); overflow: hidden; z-index: 1; pointer-events: none; }
+.left-list { left: var(--bg-list-gap); }
+.right-list { right: var(--bg-list-gap); }
+.background-list ul { list-style: none; padding: 0; margin: 0; position: absolute; top: 0; left: 0; width: 100%; animation: none !important; transform: translateY(0%); }
+.background-list li { display: block; height: var(--bg-list-item-height); line-height: var(--bg-list-item-height); font-size: var(--bg-list-font-size); font-family: 'Shentox-SemiBold', Consolas, 'Courier New', monospace; color: var(--bg-list-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 0.5vw; box-sizing: border-box; width: 100%; }
+.right-list ul { font-family: 'Triglavian - Complete Regular', Consolas, 'Courier New', monospace; color: var(--bg-list-trig-color); }
+.right-list li { font-family: inherit; color: inherit; text-align: right; }
+.left-list li { text-align: left; }
+
+/* --- Animation Content & Mode Visibility --- */
+.animation-content { width: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; position: relative; z-index: 10; background-color: transparent; flex-shrink: 0; flex-grow: 1; min-height: 40vh; }
+.reveal-mode { display: none; max-width: 100%; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.5s ease-out, margin-top 0.5s ease-out, opacity 0.5s ease-out; opacity: 0; position: relative; z-index: 1; background-color: transparent; }
+body.show-boxes #box-reveal-mode,
+body.show-list #list-reveal-mode,
+body.show-triglavian #triglavian-reveal-mode,
+body.show-node-path #node-path-reveal-mode,
+body.show-trig-conduit #trig-conduit-reveal-mode,
+body.show-trig-code #trig-code-reveal-mode {
+    display: flex;
+}
+.reveal-mode.visible { opacity: 1; }
+#box-reveal-mode.slide-up,
+#list-reveal-mode.slide-up,
+#triglavian-reveal-mode.slide-up,
+#node-path-reveal-mode.slide-up,
+#trig-conduit-reveal-mode.slide-up,
+#trig-code-reveal-mode.slide-up {
+    transform: translateY(-6vmin);
+}
+
+/* === NEW/MODIFIED: PRIZE REVEAL CONTAINER === */
+.prize-reveal-container {
+    /* Use position:fixed to create a full-screen overlay */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Use flexbox to perfectly center the content box inside */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    background-color: rgba(5, 8, 10, 0.85);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s;
+    padding: 2vmin; /* Add some padding to the overlay itself */
+    box-sizing: border-box;
+}
+.prize-reveal-container.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear;
+}
+.prize-reveal-display {
+    /* This is now the bordered content box */
+    padding: 2vmin 3vmin;
+    border: 0.2vmin solid var(--trig-cyan);
+    border-radius: 4px;
+    width: 90%;
+    max-width: 1200px;
+    box-sizing: border-box;
+    /* And it uses flexbox to manage its internal lines */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: font-family 0.8s ease-in-out;
+    font-family: 'Triglavian - Complete Regular', monospace;
+}
+.prize-reveal-display.revealed {
+    font-family: 'Shentox-SemiBold', sans-serif;
+}
+.prize-reveal-line {
+    display: block;
+    width: 100%;
+    color: var(--trig-cyan);
+    text-shadow: 0 0 10px var(--trig-cyan);
+    letter-spacing: 0.1em;
+    transition: color 0.8s ease-in-out, text-shadow 0.8s ease-in-out, letter-spacing 0.8s ease-in-out;
+}
+.prize-reveal-display.revealed .prize-reveal-line {
+    color: var(--trig-yellow);
+    text-shadow: 0 0 10px var(--trig-yellow);
+    letter-spacing: 0.05em;
+}
+#prize-reveal-name {
+    font-size: clamp(20px, 4vmin, 52px);
+    line-height: 1.3;
+    margin-bottom: 0.5em; /* Space between prize and donator */
+}
+#prize-reveal-donator {
+    font-size: clamp(14px, 2.5vmin, 32px);
+    line-height: 1.2;
+    opacity: 0.8;
+}
+/* === END OF MODIFIED STYLING === */
+
+
+/* --- Hacking (Box) Reveal Styling (Mode 1) --- */
+.boxes-row { display: flex; justify-content: center; align-items: center; width: auto; max-width: var(--boxes-row-max-width); padding: 1vmin 1.5vmin; border-top: 0.3vmin solid var(--trig-cyan); border-bottom: 0.3vmin solid var(--trig-cyan); box-sizing: border-box; position: relative; z-index: 2; background-color: var(--trig-dark); border-radius: 2px; transition: opacity 0.4s ease-out; opacity: 0; margin: 1vmin 0; }
+.boxes-row.visible { opacity: 1; }
+.box {
+    width: var(--box-width);
+    height: var(--box-height);
+    background-color: var(--trig-dark-blue);
+    border: var(--box-border-width) solid var(--trig-cyan);
+    margin: 0 var(--box-margin);
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    font-size: var(--box-font-size);
+    text-transform: uppercase;
+    transition: color 0.2s ease, font-family 0.1s ease, font-weight 0.1s ease, border-color 0.4s ease-out, box-shadow 0.4s ease-out;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    border-radius: 1px;
+    color: var(--trig-grey);
+    font-family: 'Triglavian - Complete Regular', sans-serif;
+    font-weight: normal;
+    box-shadow: 0 0 0px 0px transparent;
+    padding: 0; /* Remove any existing padding that might affect alignment */
+}
+.box.revealed { color: var(--trig-white); font-family: 'Shentox-SemiBold', sans-serif; font-weight: 600; }
+@keyframes boxPulse { 0% { border-color: var(--trig-cyan); box-shadow: 0 0 0px 0px transparent; } 50% { border-color: var(--trig-cyan-bright); box-shadow: 0 0 2.5vmin 0.5vmin var(--box-pulse-glow); } 100% { border-color: var(--trig-cyan); box-shadow: 0 0 0px 0px transparent; } }
+.box.box-pulse { animation: boxPulse 0.8s ease-in-out 1; }
+.connection-indicators { display: none; }
+
+/* --- Vertical List Scroll Styling (Mode 2) --- */
+#list-reveal-mode { perspective: var(--list-perspective); display: flex; flex-direction: column; align-items: center; }
+
+.list-lights-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: var(--list-lights-indicator-margin-bottom);
+    height: calc(var(--list-light-size) + (2 * var(--list-light-border-width)) + 0.5vmin);
+    width: auto;
+    min-width: 50vw;
+    max-width: var(--list-max-width-px);
+    padding: 0.5vmin var(--list-padding);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 4;
+}
+.list-light {
+    width: var(--list-light-size);
+    height: var(--list-light-size);
+    border-radius: 50%;
+    margin: 0 var(--list-light-margin);
+    background-color: var(--list-light-color-off);
+    border: var(--list-light-border-width) solid var(--trig-grey);
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+    opacity: 0.7;
+}
+.list-light.on {
+    background-color: var(--list-light-color-on);
+    border-color: var(--trig-yellow);
+    box-shadow: 0 0 calc(var(--list-light-size) * 0.6) calc(var(--list-light-size) * 0.2) var(--list-light-glow-on);
+    opacity: 1;
+}
+.list-light.dim {
+    background-color: var(--list-light-color-dim);
+    border-color: var(--trig-grey);
+    opacity: 0.85;
+}
+.list-light.off {
+    background-color: var(--list-light-color-off);
+    border-color: var(--trig-grey);
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+.list-scroll-container { width: auto; min-width: 50vw; max-width: var(--list-max-width-px); height: var(--list-height); border-top: 0.3vmin solid var(--trig-cyan); border-bottom: 0.3vmin solid var(--trig-cyan); overflow: hidden; position: relative; background: radial-gradient(ellipse at center, var(--list-bg-gradient-start) 0%, var(--list-bg-gradient-end) 70%); box-shadow: 0 0 2vmin 0.5vmin var(--list-glow-color); padding: 0 var(--list-padding); box-sizing: border-box; border-radius: 2px; transform-style: preserve-3d; }
+.list-scroll-container::before, .list-scroll-container::after { content: ''; position: absolute; left: 0; right: 0; height: calc(var(--list-item-height) * var(--list-edge-fade-height-multiplier)); z-index: 2; pointer-events: none; }
+.list-scroll-container::before { top: 0; background: linear-gradient(to bottom, var(--trig-dark) 30%, hsla(from var(--trig-dark) h s l / 0) 100%); }
+.list-scroll-container::after { bottom: 0; background: linear-gradient(to top, var(--trig-dark) 30%, hsla(from var(--trig-dark) h s l / 0) 100%); }
+.list-pointer { width: calc(100% - (2 * var(--list-padding))); height: 0.3vmin; background-color: var(--list-pointer-color); position: absolute; top: 50%; left: var(--list-padding); transform: translateY(-50%); z-index: 3; box-shadow: 0 0 1.2vmin 0.2vmin var(--list-pointer-color); border-radius: 1px; }
+.entrant-list { list-style: none; padding: 0; margin: 0; position: absolute; left: var(--list-padding); right: var(--list-padding); top: 0; transform-style: preserve-3d; transform: rotateX(var(--list-rotateX)); }
+.entrant-list li { height: var(--list-item-height); display: flex; justify-content: center; align-items: center; font-size: var(--list-font-size); font-family: 'Shentox-SemiBold', sans-serif; font-weight: 600; color: var(--list-item-color); background-color: var(--trig-dark-blue); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 1.5vmin; transition: color 0.3s ease-out, opacity 0.3s ease-out; opacity: 0.8; margin-bottom: var(--list-item-margin); border-radius: 2px; border: 0.1vmin solid transparent; box-shadow: 0 0.1vmin 0.3vmin rgba(0,0,0,0.4); transform: rotateX(calc(-1 * var(--list-rotateX))); }
+@keyframes winnerListItemPulse { 0% { border-color: var(--trig-cyan); box-shadow: 0 0 1.5vmin 0.2vmin var(--box-pulse-glow), 0 0.1vmin 0.3vmin rgba(0,0,0,0.4); transform: rotateX(calc(-1 * var(--list-rotateX))) scale(1); } 50% { border-color: var(--trig-cyan-bright); box-shadow: 0 0 2.5vmin 0.6vmin var(--trig-cyan-bright), 0 0.1vmin 0.3vmin rgba(0,0,0,0.4); transform: rotateX(calc(-1 * var(--list-rotateX))) scale(1.03); } 100% { border-color: var(--trig-cyan); box-shadow: 0 0 1.5vmin 0.2vmin var(--box-pulse-glow), 0 0.1vmin 0.3vmin rgba(0,0,0,0.4); transform: rotateX(calc(-1 * var(--list-rotateX))) scale(1); } }
+.entrant-list li.active { color: var(--list-active-item-color); opacity: 1.0; animation: winnerListItemPulse 0.8s ease-in-out infinite; }
+.list-winner-display {
+    background-color: var(--list-winner-bg);
+    color: var(--list-winner-text-color);
+    padding: var(--list-winner-padding);
+    border: 0.2vmin solid var(--trig-cyan);
+    border-radius: 4px;
+    font-size: var(--list-winner-font-size);
+    font-family: 'Shentox-SemiBold', sans-serif;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 1.5vmin;
+    opacity: 0;
+    transform: translateY(1.5vmin);
+    transition: opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s;
+    visibility: hidden;
+    position: relative;
+    z-index: 2;
+    min-width: 25vmin;
+    max-width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.list-winner-display.visible { opacity: 1; transform: translateY(0); visibility: visible; }
+
+/* --- Triglavian Translation Styling (Mode 4) --- */
+.triglavian-boxes-row { display: flex; justify-content: center; align-items: center; width: auto; padding: 1vmin 1.5vmin; box-sizing: border-box; position: relative; z-index: 2; background-color: transparent; border-radius: 2px; transition: opacity 0.4s ease-out; opacity: 0; margin: 1vmin 0 5vmin 0; }
+.triglavian-boxes-row.visible { opacity: 1; }
+.triglavian-box { width: var(--trig-box-width); height: var(--trig-box-height); background-color: var(--trig-dark-blue); border: var(--trig-box-border-width) solid var(--trig-cyan); margin: 0 var(--trig-box-margin); display: flex; justify-content: center; align-items: center; font-size: var(--trig-box-font-size); font-family: 'Triglavian - Complete Regular', sans-serif; color: var(--trig-cyan-bright); transition: color 0.1s ease, font-family 0.1s ease, font-weight 0.1s ease, border-color 0.4s ease-out, box-shadow 0.4s ease-out, font-size 0.1s ease; user-select: none; -webkit-user-select: none; -moz-user-select: none; border-radius: 1px; box-shadow: 0 0 0px 0px transparent; font-weight: normal; line-height: 1; text-transform: uppercase; }
+.triglavian-box.showing-reveal { font-family: 'Shentox-SemiBold', sans-serif; color: var(--trig-winner-text-color); font-weight: 600; font-size: var(--trig-temp-reveal-font-size); }
+.triglavian-box.box-pulse { animation: boxPulse 0.8s ease-in-out 1; }
+.triglavian-winner-display { background-color: var(--trig-winner-bg); color: var(--trig-winner-text-color); padding: var(--trig-winner-padding); border: 0.2vmin solid var(--trig-cyan); border-radius: 4px; font-size: var(--trig-winner-font-size); font-family: 'Shentox-SemiBold', sans-serif; font-weight: 600; text-align: center; margin-top: 2vmin; opacity: 0; transform: translateY(1.5vmin); transition: opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s; visibility: hidden; position: relative; z-index: 2; min-width: 50vmin; min-height: var(--trig-winner-min-height); display: flex; align-items: center; justify-content: center; word-break: normal; }
+.triglavian-winner-display.visible { opacity: 1; transform: translateY(0); visibility: visible; }
+
+/* Position winner display independently when parent container is hidden */
+#triglavian-reveal-mode:not(.visible) .triglavian-winner-display.visible {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+
+/* Position winner display centered when showing independently */
+.triglavian-winner-display.standalone {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1000 !important;
+    margin-top: 0 !important;
+}
+#triglavian-winner-name {
+        font-family: 'Triglavian - Complete Regular', monospace;
+        font-weight: 400;
+        color: var(--trig-cyan-bright);
+        letter-spacing: var(--trig-winner-letter-spacing);
+        padding-left: var(--trig-winner-letter-spacing);
+        margin-left: calc(-1 * var(--trig-winner-letter-spacing));
+        display: inline-block;
+        line-height: 1.2;
+        transition:
+            font-family 3s cubic-bezier(.4,2,.6,1),
+            font-weight 3s cubic-bezier(.4,2,.6,1),
+            color 3s,
+            letter-spacing 3s;
+}
+#triglavian-winner-name.revealed {
+    font-family: 'Shentox-SemiBold', sans-serif;
+    font-weight: 600;
+    color: var(--trig-winner-text-color);
+    letter-spacing: 0.04em;
+}
+
+/* --- Node Path Reveal Styling (Mode 6) --- */
+#node-path-reveal-mode { justify-content: center; align-items: center; width: 100%; }
+.node-path-grid-container { position: relative; width: 100%; max-width: var(--node-path-grid-max-width); aspect-ratio: var(--node-path-grid-aspect-ratio); display: grid; gap: var(--node-path-grid-gap); padding: 1vmin; box-sizing: border-box; transition: opacity 0.4s ease-out; opacity: 0; margin: 1vmin 0; flex-shrink: 0; }
+.node-path-grid-container.visible { opacity: 1; }
+.node-path-node { width: var(--node-path-node-size); height: var(--node-path-node-size); border-radius: 50%; border: var(--node-path-node-border) solid var(--node-path-node-color-empty); background-color: rgba(10, 40, 69, 0.3); box-sizing: border-box; justify-self: center; align-self: center; transition: background-color calc(var(--node-path-reveal-step-duration) * 0.8) ease-out, border-color calc(var(--node-path-reveal-step-duration) * 0.8) ease-out, transform calc(var(--node-path-reveal-step-duration) * 0.5) ease-out, box-shadow calc(var(--node-path-reveal-step-duration) * 0.8) ease-out; transform: scale(0.8); opacity: 0.7; box-shadow: 0 0 0 transparent; }
+.node-path-node.visible { transform: scale(1); opacity: 1; }
+.node-path-node.path { border-color: var(--node-path-node-color-path); background-color: rgba(135, 206, 250, 0.4); box-shadow: 0 0 0.8vmin 0.1vmin rgba(135, 206, 250, 0.5); }
+.node-path-node.target { border-color: var(--node-path-node-color-target); background-color: rgba(242, 212, 74, 0.5); box-shadow: 0 0 1.2vmin 0.2vmin rgba(242, 212, 74, 0.6); }
+@keyframes nodePulseElectric { 0% { transform: scale(1); box-shadow: 0 0 0.8vmin 0.1vmin rgba(135, 206, 250, 0.5); border-color: var(--node-path-node-color-path);} 50% { transform: scale(1.25); box-shadow: 0 0 2vmin 0.5vmin var(--node-path-node-pulse-glow); border-color: var(--node-path-node-color-active); background-color: rgba(255, 255, 255, 0.7); } 100% { transform: scale(1); box-shadow: 0 0 0.8vmin 0.1vmin rgba(135, 206, 250, 0.5); border-color: var(--node-path-node-color-path);} }
+.node-path-node.active { animation: nodePulseElectric calc(var(--node-path-reveal-step-duration) * 2.5) ease-in-out 1; }
+.node-path-node.vowel-reveal-node { border-color: var(--trig-yellow); background-color: rgba(242, 212, 74, 0.5); animation: nodePulseVowel calc(var(--node-path-reveal-step-duration) * 3) ease-in-out 1; box-shadow: 0 0 1.5vmin 0.3vmin rgba(242, 212, 74, 0.7); }
+@keyframes nodePulseVowel { 0% { transform: scale(1); box-shadow: 0 0 0.8vmin 0.1vmin rgba(242, 212, 74, 0.5); } 50% { transform: scale(1.3); box-shadow: 0 0 2.5vmin 0.6vmin rgba(255, 255, 180, 0.9); } 100% { transform: scale(1); box-shadow: 0 0 0.8vmin 0.1vmin rgba(242, 212, 74, 0.5); } }
+.node-path-svg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: visible; }
+.node-path-line { stroke: var(--node-path-line-color); stroke-width: var(--node-path-line-width); stroke-linecap: round; fill: none; stroke-dasharray: var(--node-path-line-dash-length); stroke-dashoffset: var(--node-path-line-dash-length); transition: stroke-dashoffset calc(var(--node-path-reveal-step-duration) * 0.9) cubic-bezier(0.6, 0, 0.4, 1); filter: drop-shadow(0 0 0.5vmin var(--node-path-line-glow-color)); }
+.node-path-line.visible { stroke-dashoffset: 0; }
+.node-path-winner-display { background-color: var(--node-path-winner-bg); color: var(--node-path-winner-text-color); padding: var(--node-path-winner-padding); border: 0.2vmin solid var(--trig-cyan); border-radius: 4px; font-size: var(--node-path-winner-font-size); font-family: 'Shentox-SemiBold', sans-serif; font-weight: 600; text-align: center; margin-top: 2vmin; opacity: 0; transform: translateY(1.5vmin); transition: opacity 0.4s ease-out var(--node-path-winner-reveal-delay), transform 0.4s ease-out var(--node-path-winner-reveal-delay), visibility 0s linear calc(var(--node-path-winner-reveal-delay) + 0.4s); visibility: hidden; position: relative; z-index: 2; min-width: 25vmin; max-width: 90%; display: flex; align-items: center; justify-content: center; overflow-wrap: break-word; }
+.node-path-winner-display.visible { opacity: 1; transform: translateY(0); visibility: visible; transition: opacity 0.4s ease-out, transform 0.4s ease-out, visibility 0s linear; }
+#node-path-winner-name { line-height: 1.2; display: block; text-align: center; width: 100%; overflow-wrap: break-word; letter-spacing: 0.1em; }
+
+
+/* --- Triglavian Conduit Reveal Styling (Mode 7) --- */
+/* --- Triglavian Conduit Reveal Styling (Mode 7) --- */
+#trig-conduit-reveal-mode {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.trig-conduit-nodes-container {
+    position: relative;
+    width: var(--trig-conduit-nodes-container-size);
+    height: var(--trig-conduit-nodes-container-size);
+    margin-bottom: 3vmin;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.5s ease-out var(--trig-conduit-appear-delay), transform 0.5s ease-out var(--trig-conduit-appear-delay);
+}
+#trig-conduit-reveal-mode.visible .trig-conduit-nodes-container.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* NEW: SVG Overlay for lines */
+.trig-conduit-svg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1; /* Behind the nodes */
+    overflow: visible;
+}
+
+/* NEW: Conduit line styling */
+.trig-conduit-line {
+    stroke: var(--trig-cyan);
+    stroke-width: var(--node-path-line-width);
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.15; /* Faintly visible by default */
+    filter: drop-shadow(0 0 0.5vmin var(--node-path-line-glow-color));
+    transition: opacity 0.4s ease-out;
+}
+
+/* NEW: Stable line state */
+.trig-conduit-line.stable {
+    opacity: 0.8;
+    animation: stableLinePulse 2s ease-in-out infinite;
+}
+
+@keyframes stableLinePulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.9; }
+}
+
+/* Spokes that connect nodes to the central core */
+.trig-conduit-spoke {
+    stroke: rgba(255,255,255,0.06);
+    stroke-width: 1.6;
+    opacity: 0.7;
+    transition: stroke 180ms ease, stroke-width 180ms ease, opacity 180ms ease, filter 180ms ease;
+}
+
+.trig-conduit-spoke.active {
+    stroke: var(--trig-beam-red);
+    stroke-width: 3.4;
+    opacity: 1;
+    filter: drop-shadow(0 0 18px var(--trig-beam-glow));
+}
+
+@keyframes trig-core-pulse {
+    0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 8px rgba(255,80,60,0.4), inset 0 0 20px rgba(255,120,100,0.6); }
+    40% { transform: translate(-50%, -50%) scale(1.12); box-shadow: 0 0 42px rgba(255,90,90,0.95), inset 0 0 60px rgba(255,120,100,0.95); }
+    100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 12px rgba(255,90,90,0.6), inset 0 0 28px rgba(255,120,100,0.8); }
+}
+
+.trig-conduit-core.pulse {
+    opacity: 1;
+    animation: trig-core-pulse 700ms ease-in-out 1;
+}
+
+.trig-conduit-core.stable {
+    opacity: 1;
+    animation: trig-core-pulse 1100ms ease-in-out 2;
+}
+
+
+.trig-conduit-node {
+    position: absolute;
+    width: var(--trig-conduit-node-size);
+    height: var(--trig-conduit-node-size);
+    background-color: var(--trig-conduit-node-bg);
+    border: var(--trig-conduit-node-border-width) solid var(--trig-conduit-node-border-color);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%); /* Simple triangle */
+    border-radius: 0;
+    transform-origin: center center;
+    transition: background-color 0.3s ease-out, border-color 0.3s ease-out, transform 0.4s ease-out, box-shadow 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg); /* Initial state, JS will set final rotation */
+    box-shadow: 0 0 0px 0px transparent;
+}
+
+.trig-conduit-node.visible {
+    opacity: 1;
+    transform: scale(1) rotate(var(--node-rotation, 0deg));
+}
+
+/* NEW: Style for nodes that are part of the stable path */
+.trig-conduit-node.path-complete {
+    background-color: rgba(74, 241, 242, 0.2);
+    box-shadow: 0 0 1.5vmin 0.3vmin var(--trig-conduit-node-border-color);
+}
+
+
+@keyframes trigConduitNodePulse {
+    0% {
+        transform: scale(1) rotate(var(--node-rotation, 0deg));
+        box-shadow: 0 0 1vmin 0.2vmin var(--trig-conduit-node-border-color);
+        background-color: var(--trig-conduit-node-bg);
+        border-color: var(--trig-conduit-node-border-color);
+    }
+    30% {
+        transform: scale(1.25) rotate(var(--node-rotation, 0deg));
+        box-shadow: 0 0 3vmin 0.8vmin var(--trig-conduit-node-pulse-glow);
+        background-color: var(--trig-conduit-node-active-bg);
+        border-color: var(--trig-conduit-node-active-border-color);
+    }
+    60% {
+        transform: scale(1.15) rotate(var(--node-rotation, 0deg));
+        box-shadow: 0 0 2.5vmin 0.6vmin var(--trig-conduit-node-pulse-glow);
+        background-color: var(--trig-conduit-node-active-bg);
+        border-color: var(--trig-conduit-node-active-border-color);
+    }
+    100% {
+        transform: scale(1.05) rotate(var(--node-rotation, 0deg));
+        box-shadow: 0 0 1.5vmin 0.3vmin var(--trig-conduit-node-pulse-glow);
+        background-color: var(--trig-conduit-node-active-bg);
+        border-color: var(--trig-conduit-node-active-border-color);
+    }
+}
+
+.trig-conduit-node.active {
+    animation: trigConduitNodePulse var(--trig-conduit-pulse-anim-duration-ms, 1000ms) ease-in-out infinite;
+}
+
+/* NEW: Final pulse effect for the whole container */
+@keyframes finalConduitPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.trig-conduit-nodes-container.final-pulse-effect .trig-conduit-node.visible {
+    animation: finalConduitPulse 1s ease-in-out 2;
+}
+
+
+.trig-conduit-winner-display {
+    background-color: var(--trig-conduit-winner-bg);
+    color: var(--trig-conduit-winner-text-color);
+    padding: var(--trig-conduit-winner-display-padding);
+    border: 0.2vmin solid var(--trig-cyan);
+    border-radius: 4px;
+    font-size: var(--trig-conduit-winner-display-font-size);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(1.5vmin) scale(0.9);
+    transition: opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s, visibility 0s linear 0.6s;
+    visibility: hidden;
+    position: relative;
+    z-index: 2;
+    min-width: 40vmin;
+    max-width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-wrap: break-word;
+}
+
+.trig-conduit-winner-display.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out, visibility 0s linear;
+}
+
+#trig-conduit-winner-name {
+    font-family: 'Triglavian - Complete Regular', monospace;
+    color: var(--trig-conduit-winner-placeholder-color);
+    letter-spacing: var(--trig-conduit-winner-letter-spacing);
+    padding-left: var(--trig-conduit-winner-letter-spacing);
+    margin-left: calc(-1 * var(--trig-conduit-winner-letter-spacing));
+    display: inline-block;
+    line-height: 1.2;
+    transition: color 0.3s ease-out, font-family 0.2s linear;
+}
+
+/* MODIFIED: Target individual spans for reveal */
+#trig-conduit-winner-name .letter-placeholder {
+    font-family: 'Triglavian - Complete Regular', monospace;
+    color: var(--trig-conduit-winner-placeholder-color);
+    opacity: 0.7;
+    display: inline-block;
+    transition: opacity 0.3s ease-out, color 0.3s ease-out, font-family 0.2s linear;
+}
+#trig-conduit-winner-name .letter-revealed {
+    font-family: 'Shentox-SemiBold', sans-serif;
+    color: var(--trig-conduit-winner-text-color);
+    opacity: 1;
+    font-weight: 600;
+    display: inline-block;
+}
+#trig-conduit-winner-name .letter-placeholder {
+    font-family: 'Triglavian - Complete Regular', monospace;
+    color: var(--trig-conduit-winner-placeholder-color);
+    opacity: 0.7;
+    display: inline-block;
+    transition: opacity 0.3s ease-out, color 0.3s ease-out, font-family 0.2s linear;
+}
+#trig-conduit-winner-name .letter-revealed {
+    font-family: 'Shentox-SemiBold', sans-serif;
+    color: var(--trig-conduit-winner-text-color);
+    opacity: 1;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* === Triglavian Code Reveal Styling (Mode 8) === */
+#trig-code-reveal-mode {
+    width: 100%;
+    max-width: var(--trig-code-participants-width);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.trig-code-winner-code-display {
+    font-family: 'Triglavian - Complete Regular', monospace;
+    font-size: var(--trig-code-winner-code-font-size);
+    color: var(--trig-cyan-bright);
+    background-color: var(--trig-code-winner-code-bg);
+    border: 0.2vmin solid var(--trig-code-winner-code-border-color);
+    padding: var(--trig-code-winner-code-padding);
+    border-radius: 4px;
+    margin-bottom: 2vmin;
+    letter-spacing: var(--trig-code-winner-code-letter-spacing);
+    text-align: center;
+    min-height: calc(var(--trig-code-winner-code-font-size) * 1.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    min-width: 60%;
+    max-width: 95%;
+    flex-wrap: wrap;
+}
+#trig-code-reveal-mode.visible .trig-code-winner-code-display.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+.trig-code-winner-code-display span {
+    display: inline-block;
+    transition: color 0.2s ease-out, opacity 0.2s ease-out;
+}
+.trig-code-winner-code-display .revealed-char {
+    color: var(--trig-yellow);
+    opacity: 1;
+}
+.trig-code-winner-code-display .placeholder-char {
+    color: var(--trig-code-placeholder-char-color);
+    opacity: 0.6;
+}
+.trig-code-winner-code-display .just-revealed { /* Temporary class for newly revealed char */
+    animation: newCharFlash 0.5s ease-out;
+}
+@keyframes newCharFlash {
+    0%, 100% { text-shadow: none; }
+    50% { text-shadow: 0 0 10px var(--trig-white), 0 0 20px var(--trig-white); }
+}
+
+
+.trig-code-participants-container {
+    width: 100%;
+    height: var(--trig-code-participants-height);
+    overflow-y: auto;
+    border: 0.15vmin solid var(--trig-dark-blue);
+    background-color: rgba(5, 8, 10, 0.7);
+    padding: 1vmin;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5vmin;
+    opacity: 0;
+    transition: opacity 0.5s ease-out 0.2s;
+}
+#trig-code-reveal-mode.visible .trig-code-participants-container.visible {
+    opacity: 1;
+}
+
+.trig-code-participant-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8vmin 1.2vmin;
+    background-color: var(--trig-dark-blue);
+    border-radius: 2px;
+    height: var(--trig-code-participant-item-height);
+    transition: opacity var(--trig-code-elimination-duration) ease-out,
+                background-color var(--trig-code-elimination-duration) ease-out,
+                transform 0.3s ease-out,
+                border-color 0.3s ease-out,
+                max-height 0.4s ease-in-out, /* For smooth removal */
+                padding 0.4s ease-in-out, /* For smooth removal */
+                margin-bottom 0.4s ease-in-out; /* For smooth removal */
+    opacity: 1;
+    border: 1px solid transparent;
+    overflow: hidden; /* Needed for height transition */
+    max-height: var(--trig-code-participant-item-height); /* Start with normal height */
+}
+
+.trig-code-participant-item .name {
+    font-family: 'Shentox-SemiBold', sans-serif;
+    font-size: var(--trig-code-participant-font-size);
+    color: var(--trig-code-participant-name-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    margin-right: 1.5vmin;
+    transition: color var(--trig-code-elimination-duration) ease-out;
+}
+
+.trig-code-participant-item .code {
+    font-family: 'Triglavian - Complete Regular', monospace;
+    font-size: var(--trig-code-participant-font-size);
+    color: var(--trig-code-participant-code-color);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    transition: color var(--trig-code-elimination-duration) ease-out;
+}
+.trig-code-participant-item .code .matching-char {
+    color: var(--trig-code-matching-char-color);
+}
+
+/* Styles for visually eliminating (but keeping in flow if finalist) */
+.trig-code-participant-item.eliminated {
+    opacity: 0.35;
+    background-color: rgba(10, 40, 69, 0.15);
+}
+.trig-code-participant-item.eliminated .name {
+    color: var(--trig-code-participant-eliminated-color);
+    text-decoration: line-through;
+}
+.trig-code-participant-item.eliminated .code {
+    color: var(--trig-code-participant-eliminated-code-color);
+    text-decoration: line-through;
+}
+
+/* Styles for animated removal (fade and shrink) */
+.trig-code-participant-item.eliminating {
+    opacity: 0;
+    transform: scaleY(0.5) translateX(-20px);
+    max-height: 0; /* Collapse height */
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0; /* Collapse margin */
+    border-width: 0;
+}
+
+
+.trig-code-participant-item.highlight-match {
+   border-color: var(--trig-code-highlight-color);
+   background-color: rgba(74, 241, 242, 0.1);
+   box-shadow: 0 0 1vmin 0.1vmin var(--trig-code-highlight-color);
+   /* transform: scale(1.01); No longer needed with border */
+}
+.trig-code-participant-item.highlight-match .name {
+    color: var(--trig-white);
+}
+.trig-code-participant-item.highlight-match .code {
+    color: var(--trig-yellow);
+}
+
+
+.trig-code-winner-name-display {
+    background-color: var(--trig-code-winner-name-bg);
+    color: var(--trig-code-winner-name-text-color);
+    padding: var(--trig-code-winner-name-padding);
+    border: 0.2vmin solid var(--trig-cyan);
+    border-radius: 4px;
+    font-size: var(--trig-code-winner-name-font-size);
+    font-family: 'Shentox-SemiBold', sans-serif;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 2vmin;
+    opacity: 0;
+    transform: translateY(1.5vmin);
+    transition: opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s;
+    visibility: hidden;
+    min-width: 30vmin;
+    max-width: 90%;
+}
+.trig-code-winner-name-display.visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+
+/* --- Shared Countdown Timer Styles --- */
+.countdown-container { position: relative; z-index: 11; width: var(--countdown-size); height: var(--countdown-size); margin-top: 2vh; margin-bottom: 2vh; visibility: hidden; opacity: 0; transform: scale(0.8); transition: opacity var(--countdown-reveal-duration) ease-out var(--countdown-reveal-delay), transform var(--countdown-reveal-duration) ease-out var(--countdown-reveal-delay), visibility 0s linear calc(var(--countdown-reveal-delay) + var(--countdown-reveal-duration)); flex-shrink: 0; }
+.countdown-container.visible { visibility: visible; opacity: 1; transform: scale(1); transition: opacity var(--countdown-reveal-duration) ease-out, transform var(--countdown-reveal-duration) ease-out, visibility 0s linear; }
+.countdown-svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.countdown-track, .countdown-progress { fill: none; stroke-width: var(--countdown-border); filter: drop-shadow(0 0.2vmin 0.4vmin rgba(0,0,0,0.3)); }
+.countdown-track { stroke: var(--countdown-track-color); }
+.countdown-progress { stroke: var(--countdown-yellow); stroke-linecap: round; transition: stroke-dashoffset 0.1s linear, stroke 0.5s ease-out; }
+.countdown-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--countdown-text-color); font-size: var(--countdown-font-size); font-family: 'Shentox-SemiBold', sans-serif; font-weight: 600; user-select: none; -webkit-user-select: none; -moz-user-select: none; }
+
+
+/* --- Layout Adjustment Visual Indicator --- */
+.adjustable-widget-active {
+    border: var(--adjustable-border-style) !important;
+}
+
+/* --- Custom Scrollbar for Triglavian Code Participants --- */
+.trig-code-participants-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.trig-code-participants-container::-webkit-scrollbar-track {
+    background: var(--trig-dark-blue); /* Slightly lighter than pure dark for visibility */
+    border-radius: 5px;
+    border: 1px solid var(--trig-dark); /* Match container inner darkness */
+}
+
+.trig-code-participants-container::-webkit-scrollbar-thumb {
+    background-color: var(--trig-cyan);
+    border-radius: 4px;
+    border: 1px solid var(--trig-cyan-bright);
+}
+
+.trig-code-participants-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--trig-cyan-bright);
+    border-color: var(--trig-white);
+}
+
+.trig-code-participants-container::-webkit-scrollbar-corner {
+    background: var(--trig-dark-blue); /* Consistent with track */
+}
+
+.winner-corp-class, .winner-alliance-class {
+    /* font-size, color, line-height, text-align, margin-top are in HTML */
+    max-width: clamp(900px, 100vmin, 1400px); /* Match portrait max width */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.winner-name-class { /* This styles the SPAN that holds the winner's name */
+    /* display: block; is already in HTML if used */
+    font-weight: bold; /* Ensure it stands out */
+}
+
+
+/* END style.css */

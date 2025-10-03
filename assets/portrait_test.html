@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portrait Centering Test</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Portrait Centering Test</h1>
+        <p>This shows how the character card will look with the current CSS styling:</p>
+        
+        <!-- Current character card HTML (copied from the Python code) -->
+        <div style='text-align: center; margin: 20px auto; padding: 0; display: flex; justify-content: center; width: 100%;'>
+            <div style='display: block; background: linear-gradient(135deg, #0a0f1a 0%, #1a1f2a 50%, #0f1419 100%); border: 3px solid #4af1f2; border-radius: 16px; padding: 25px; box-shadow: 0 0 30px rgba(74, 241, 242, 0.4), inset 0 0 20px rgba(74, 241, 242, 0.1); position: relative; width: 500px; text-align: center;'>
+                
+                <!-- Inner glow border -->
+                <div style='position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 1px solid rgba(232, 217, 0, 0.3); border-radius: 12px; pointer-events: none;'></div>
+                
+                <!-- Header line -->
+                <div style='margin-bottom: 20px; text-align: center;'>
+                    <div style='height: 2px; background: linear-gradient(90deg, transparent 0%, #4af1f2 20%, #e8d900 50%, #4af1f2 80%, transparent 100%); margin: 8px auto; width: 60%; border-radius: 1px;'></div>
+                </div>
+                
+                <!-- Content area -->
+                <div style='text-align: center; width: 100%;'>
+                    
+                    <!-- Portrait section with CSS Grid -->
+                    <div style='display: grid; place-items: center; width: 100%; margin-bottom: 25px;'>
+                        <div style='position: relative;'>
+                            <!-- Using a placeholder image for testing -->
+                            <img src='https://images.evetech.net/characters/108115856/portrait?tenant=tranquility&size=256' width='180' height='180' style='border: 4px solid #e8d900; border-radius: 12px; box-shadow: 0 0 25px rgba(232, 217, 0, 0.6), 0 0 50px rgba(74, 241, 242, 0.3); transition: transform 0.3s ease;'>
+                            
+                            <!-- Corner decorations -->
+                            <div style='position: absolute; top: -8px; left: -8px; width: 20px; height: 20px; border-top: 3px solid #4af1f2; border-left: 3px solid #4af1f2; border-radius: 4px 0 0 0;'></div>
+                            <div style='position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; border-top: 3px solid #4af1f2; border-right: 3px solid #4af1f2; border-radius: 0 4px 0 0;'></div>
+                            <div style='position: absolute; bottom: -8px; left: -8px; width: 20px; height: 20px; border-bottom: 3px solid #4af1f2; border-left: 3px solid #4af1f2; border-radius: 0 0 0 4px;'></div>
+                            <div style='position: absolute; bottom: -8px; right: -8px; width: 20px; height: 20px; border-bottom: 3px solid #4af1f2; border-right: 3px solid #4af1f2; border-radius: 0 0 4px 0;'></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Information section -->
+                    <div style='text-align: center; width: 100%; margin: 0 auto;'>
+                        
+                        <!-- Character name -->
+                        <div style='margin-bottom: 20px;'>
+                            <div style='font-size: 14pt; color: #4af1f2; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>🚀 CHARACTER</div>
+                            <div style='font-size: 21pt; color: #ffffff; font-weight: bold; text-shadow: 0 0 8px rgba(255, 255, 255, 0.5); line-height: 1.2; padding: 8px 12px; background: rgba(74, 241, 242, 0.1); border-left: 4px solid #4af1f2; border-radius: 0 8px 8px 0; margin: 0 auto; display: inline-block;'>virxens</div>
+                        </div>
+                        
+                        <!-- Corporation -->
+                        <div style='margin-bottom: 15px;'>
+                            <div style='font-size: 14pt; color: #4af1f2; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>🏢 CORPORATION</div>
+                            <div style='font-size: 18pt; color: #ffffff; font-weight: 500; padding: 6px 12px; background: rgba(74, 241, 242, 0.1); border-left: 3px solid #4af1f2; border-radius: 0 6px 6px 0; line-height: 1.3; margin: 0 auto; display: inline-block;'>Nexis.</div>
+                        </div>
+                        
+                        <!-- Alliance -->
+                        <div style='margin-bottom: 10px;'>
+                            <div style='font-size: 14pt; color: #4af1f2; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>⭐ ALLIANCE</div>
+                            <div style='font-size: 18pt; color: #ffffff; font-weight: 500; padding: 6px 12px; background: rgba(74, 241, 242, 0.1); border-left: 3px solid #4af1f2; border-radius: 0 6px 6px 0; line-height: 1.3; margin: 0 auto; display: inline-block;'>Shadow Ultimatum</div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style='margin-top: 20px; text-align: center;'>
+                        <div style='display: inline-block; padding: 8px 16px; background: rgba(74, 241, 242, 0.2); border: 1px solid #4af1f2; border-radius: 20px; font-size: 13pt; color: #4af1f2; font-weight: bold; letter-spacing: 1px;'>✅ VERIFIED PILOT</div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        
+        <p style="margin-top: 30px; color: #aaa;">
+            <strong>Test Instructions:</strong><br>
+            1. Look at the portrait image above<br>
+            2. Check if it's centered horizontally within the blue card border<br>
+            3. The portrait should be equidistant from the left and right edges of the card
+        </p>
+    </div>
+</body>
+</html>
