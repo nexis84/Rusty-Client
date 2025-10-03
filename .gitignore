@@ -72,5 +72,10 @@ backup/
 # Logs
 *.log
 
+# Environment variables (sensitive credentials)
+.env
+# But include the example template
+!.env.example
+
 # Local configuration (if you want to keep config.json out)
 # config.json

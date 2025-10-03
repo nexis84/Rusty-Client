@@ -17,7 +17,8 @@ datas = [
     ('assets', 'assets'),
     ('sounds', 'sounds'),
     ('Fonts', 'Fonts'),
-    ('.env', '.'),
+    ('.env', '.'),  # Include credentials for distribution
+    ('.env.example', '.'),  # Include template for reference
     ('config.json', '.'),
     ('icon.ico', '.'),
     ('Loading.png', '.'),
