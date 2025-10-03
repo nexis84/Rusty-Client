@@ -186,11 +186,15 @@ class OptionsDialog(QDialog):
         self.entry_type_combo.currentTextChanged.connect(self._update_entry_control_visibility)
         self._update_entry_control_visibility()
         line1 = QFrame(); line1.setFrameShape(QFrame.Shape.HLine); line1.setFrameShadow(QFrame.Shadow.Sunken); layout.addRow(line1)
-        self.target_channel_label = QLabel("Target Twitch Channel:")
-        initial_channel = self.working_config_snapshot.get("target_channel") or ""
+        
+        # Target Channel - load from user_config.json
+        self.target_channel_label = QLabel("Your Twitch Channel:")
+        from first_run_setup import load_user_channel
+        user_channel = load_user_channel()
+        initial_channel = user_channel or self.working_config_snapshot.get("target_channel") or ""
         self.target_channel_edit = QLineEdit(initial_channel)
-        self.target_channel_edit.setPlaceholderText("Uses .env channel if blank")
-        self.target_channel_edit.setToolTip("Twitch channel to connect to.\nBlank uses channel from .env file.\nRequires application restart.")
+        self.target_channel_edit.setPlaceholderText("Enter your Twitch channel name")
+        self.target_channel_edit.setToolTip("The Twitch channel where RustyBot will monitor for giveaway entries.\nChanging this will update your channel for future sessions.")
         layout.addRow(self.target_channel_label, self.target_channel_edit)
         line2 = QFrame(); line2.setFrameShape(QFrame.Shape.HLine); line2.setFrameShadow(QFrame.Shadow.Sunken); layout.addRow(line2)
         self.enable_test_check = QCheckBox("Allow adding test entries")
@@ -916,8 +920,15 @@ class OptionsDialog(QDialog):
             temp_config_from_dialog["custom_join_command"] = self.custom_command_edit.text()
             channel_text = self.target_channel_edit.text().strip(); validated_channel = None
             if channel_text:
-                if ' ' in channel_text or not re.match(r'^[a-zA-Z0-9_]+$', channel_text): raise ValueError("Invalid character(s) in Target Twitch Channel. Only A-Z, 0-9, _ allowed.")
+                if ' ' in channel_text or not re.match(r'^[a-zA-Z0-9_]+$', channel_text): 
+                    raise ValueError("Invalid character(s) in channel name. Only A-Z, 0-9, _ allowed.")
                 validated_channel = channel_text.lower()
+                
+                # Save to user_config.json for persistence across sessions
+                from first_run_setup import update_user_channel
+                update_user_channel(validated_channel)
+                print(f"✅ Updated user channel to: {validated_channel}")
+            
             temp_config_from_dialog["target_channel"] = validated_channel
             temp_config_from_dialog["enable_test_entries"] = self.enable_test_check.isChecked()
             temp_config_from_dialog["debug_mode_enabled"] = self.debug_mode_check.isChecked()

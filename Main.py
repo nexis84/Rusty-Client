@@ -35,30 +35,52 @@ from twitchio.ext import commands
 from twitchio.ext.commands import Bot
 from twitchio.ext.commands import Command
 
-# Load environment variables from .env file
-# When packaged with PyInstaller/Nuitka, look for .env in multiple locations
+# Load environment variables from encrypted secure.env file (or fallback to .env)
+# When packaged with PyInstaller/Nuitka, look for secure.env in multiple locations
 if getattr(sys, 'frozen', False):
     # Running as compiled executable
     # Check if we're in an 'app' subfolder (organized distribution)
     exe_dir = os.path.dirname(sys.executable)
     parent_dir = os.path.dirname(exe_dir)
     
-    # Try parent directory first (for organized structure: root/.env and root/app/RustyBot.exe)
+    # Try parent directory first (for organized structure: root/secure.env and root/app/RustyBot.exe)
+    secure_env_path = os.path.join(parent_dir, 'secure.env')
     env_path = os.path.join(parent_dir, '.env')
-    if not os.path.exists(env_path):
-        # Fall back to exe directory (for flat structure)
+    
+    # Fall back to exe directory if not found in parent
+    if not os.path.exists(secure_env_path) and not os.path.exists(env_path):
+        secure_env_path = os.path.join(exe_dir, 'secure.env')
         env_path = os.path.join(exe_dir, '.env')
     
     # Also try _MEIPASS for PyInstaller compatibility
-    if not os.path.exists(env_path) and hasattr(sys, '_MEIPASS'):
+    if not os.path.exists(secure_env_path) and not os.path.exists(env_path) and hasattr(sys, '_MEIPASS'):
+        secure_env_path = os.path.join(sys._MEIPASS, 'secure.env')
         env_path = os.path.join(sys._MEIPASS, '.env')
 else:
     # Running as normal Python script
-    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    script_dir = os.path.dirname(__file__)
+    secure_env_path = os.path.join(script_dir, 'secure.env')
+    env_path = os.path.join(script_dir, '.env')
 
-print(f"Looking for .env file at: {env_path}")
-print(f"File exists: {os.path.exists(env_path)}")
-load_dotenv(env_path, override=True)
+# Try loading encrypted env first, fall back to plain .env
+if os.path.exists(secure_env_path):
+    print(f"Loading encrypted credentials from: {secure_env_path}")
+    try:
+        from secure_env_loader import SecureEnvLoader
+        loader = SecureEnvLoader()
+        env_vars = loader.load_secure_env(secure_env_path)
+        print(f"✅ Loaded {len(env_vars)} encrypted variables")
+    except Exception as e:
+        print(f"⚠️ Failed to load encrypted env: {e}")
+        print(f"Falling back to plain .env file")
+        load_dotenv(env_path, override=True)
+elif os.path.exists(env_path):
+    print(f"Loading credentials from plain .env: {env_path}")
+    load_dotenv(env_path, override=True)
+else:
+    print(f"⚠️ No credentials file found!")
+    print(f"  Looked for: {secure_env_path}")
+    print(f"  Looked for: {env_path}")
 
 ENV_TWITCH_TOKEN = os.getenv('TWITCH_TOKEN', 'N/A')
 ENV_TWITCH_NICK = os.getenv('TWITCH_NICK', 'N/A')
@@ -1031,7 +1053,20 @@ class GiveawayApp(QWidget):
         self.config = config_manager.load_config()
         self.config['token'] = ENV_TWITCH_TOKEN
         self.config['nick'] = ENV_TWITCH_NICK
-        self.config['channel'] = ENV_TWITCH_CHANNEL
+        
+        # Load user's channel from user_config.json (set during first run)
+        from first_run_setup import load_user_channel
+        user_channel = load_user_channel()
+        
+        if user_channel:
+            # Use the user's configured channel
+            self.config['channel'] = user_channel
+            print(f"Using user's channel: {user_channel}")
+        else:
+            # Fallback to ENV variable (for backwards compatibility)
+            self.config['channel'] = ENV_TWITCH_CHANNEL
+            print(f"Using channel from ENV: {ENV_TWITCH_CHANNEL}")
+        
         self.effective_channel = self.config.get("target_channel") or self.config.get("channel")
         if not self.effective_channel:
             print("WARNING: No target channel found!")
@@ -4321,6 +4356,18 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     app.setStyleSheet(BASE_STYLESHEET)
+    
+    # Check for first run and show setup dialog
+    from first_run_setup import check_first_run, show_first_run_setup, save_user_channel
+    if check_first_run():
+        print("First run detected - showing setup dialog...")
+        channel_name = show_first_run_setup()
+        if channel_name:
+            save_user_channel(channel_name)
+            print(f"✅ First run setup complete! Channel: {channel_name}")
+        else:
+            print("⚠️ User cancelled first run setup")
+            # Still allow app to continue with default from ENV
 
     splash = None
     try:

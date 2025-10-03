@@ -45,7 +45,7 @@ python -m nuitka `
     --include-data-dir=sounds=sounds `
     --include-data-dir=Fonts=Fonts `
     --include-data-file=config.json=config.json `
-    --include-data-file=.env=.env `
+    --include-data-file=secure.env=secure.env `
     --output-dir=dist `
     Main.py
 

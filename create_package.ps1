@@ -46,7 +46,7 @@ if (Test-Path "$appFolder\Main.exe") {
 # Copy user-editable files to root for easy access
 Write-Host "Copying user files to root for easy access..." -ForegroundColor Yellow
 Copy-Item -Path "$appFolder\config.json" -Destination $releaseFolder -ErrorAction SilentlyContinue
-Copy-Item -Path "$appFolder\.env" -Destination $releaseFolder -ErrorAction SilentlyContinue
+Copy-Item -Path "$appFolder\secure.env" -Destination $releaseFolder -ErrorAction SilentlyContinue
 
 # Create shortcuts to user folders in root (optional)
 # This keeps root clean while making assets accessible
@@ -70,7 +70,7 @@ OR
 - **RustyBot.vbs** - Main launcher (recommended - silent launch)
 - **RustyBot.bat** - Alternative launcher (shows console briefly)
 - **config.json** - Your settings (edit here)
-- **.env** - Twitch credentials (edit here)
+- **secure.env** - Encrypted bot credentials (included, don't edit!)
 - **README.txt** - This file
 - **app/** - Application files (all the messy stuff is here!)
 
@@ -83,14 +83,28 @@ The `app` folder contains:
 
 **💡 Tip**: You don't need to go into the app folder. Just use the launchers in the root!
 
+## 🔐 Security
+
+**Your bot token is encrypted!**
+
+The `secure.env` file contains encrypted Twitch credentials:
+- ✅ Bot token is encrypted and protected
+- ✅ Can't be easily extracted or read
+- ✅ Works automatically without configuration
+- ✅ No need for users to get their own bot token
+
+**Users don't need their own credentials** - the bot is already configured!
+
 ## ⚙️ Configuration
 
 **To change settings:**
 1. Edit `config.json` in the root folder
-2. Edit `.env` in the root folder for Twitch credentials
+2. **DO NOT edit secure.env** - it contains encrypted credentials
 3. Restart RustyBot
 
 The app will automatically read your settings from the root folder!
+
+**Note**: The bot uses pre-configured credentials. You don't need your own Twitch bot token!
 
 ## ⚠️ Important Notes
 
@@ -131,10 +145,10 @@ Edit these files in the ROOT folder (not in app folder):
   - Animation speeds
   - UI colors
   
-- **.env** - Twitch connection
-  - Your bot credentials
-  - Channel names
-  - API tokens
+- **secure.env** - Encrypted bot credentials (DO NOT EDIT!)
+  - Bot token is encrypted
+  - Pre-configured for you
+  - No changes needed!
 
 ## 🐛 Troubleshooting
 
