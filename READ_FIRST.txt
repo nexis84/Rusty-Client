@@ -1,0 +1,52 @@
+⚠️ IMPORTANT - READ BEFORE EXTRACTING! ⚠️
+
+Windows Defender will block this application as a FALSE POSITIVE.
+RustyBot is 100% safe and open source.
+
+========================================
+  EASY INSTALLATION (RECOMMENDED)
+========================================
+
+1. Extract this ZIP anywhere (e.g., Downloads folder)
+
+2. Double-click "Install.bat"
+   - It will automatically:
+     ✓ Ask where to install RustyBot
+     ✓ Add Windows Defender exclusion (prevents blocking)
+     ✓ Copy all files
+     ✓ Create desktop shortcut
+     ✓ Launch RustyBot
+
+3. Done! Use the desktop shortcut to run RustyBot
+
+========================================
+  MANUAL INSTALLATION (Advanced)
+========================================
+
+If you prefer manual installation:
+
+1. Create a folder where you want RustyBot (e.g., C:\RustyBot)
+
+2. Add Windows Defender Exclusion FIRST:
+   - Open Windows Security
+   - Virus & threat protection → Manage settings
+   - Exclusions → Add or remove exclusions
+   - Add exclusion → Folder
+   - Select the folder you created in step 1
+
+3. Extract this ZIP to that folder
+
+4. Run RustyBot.vbs
+
+========================================
+  WHY WINDOWS DEFENDER BLOCKS THIS
+========================================
+
+RustyBot is compiled Python using Nuitka - a legitimate tool
+that unfortunately triggers false positives.
+
+✓ 100% Safe and Open Source
+✓ GitHub: https://github.com/nexis84/Rusty-Client
+✓ You can review the code yourself
+
+For detailed instructions, see WINDOWS_DEFENDER_INSTRUCTIONS.md

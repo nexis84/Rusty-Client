@@ -219,6 +219,16 @@ Build Type: Nuitka Standalone (Organized Structure)
 
 $readmeContent | Out-File -FilePath "$releaseFolder\README.txt" -Encoding UTF8
 
+# Copy warning files
+Write-Host "Copying Windows Defender instructions..." -ForegroundColor Yellow
+Copy-Item "READ_FIRST.txt" -Destination "$releaseFolder\READ_FIRST.txt"
+Copy-Item "WINDOWS_DEFENDER_INSTRUCTIONS.md" -Destination "$releaseFolder\WINDOWS_DEFENDER_INSTRUCTIONS.md"
+
+# Copy installer files
+Write-Host "Copying installer scripts..." -ForegroundColor Yellow
+Copy-Item "Install.ps1" -Destination "$releaseFolder\Install.ps1"
+Copy-Item "Install.bat" -Destination "$releaseFolder\Install.bat"
+
 # Create a launcher in root that runs the app from app folder
 Write-Host "Creating launcher script..." -ForegroundColor Yellow
 $launcherContent = @"
