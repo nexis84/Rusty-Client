@@ -227,8 +227,8 @@ def load_user_channel():
 
 def update_user_channel(new_channel):
     """Update the user's channel (called from options dialog)"""
-    from config_manager import get_config_path
-    config_path = get_config_path()
+    from config_manager import _get_config_path
+    config_path = _get_config_path()
     user_config_path = config_path.parent / "user_config.json"
     
     # Load existing config or create new

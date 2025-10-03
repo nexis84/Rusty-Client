@@ -93,13 +93,13 @@ Source: "SECURE_CREDENTIALS_SETUP.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; Start Menu Icons
-Name: "{group}\{#MyAppName}"; Filename: "{app}\Main.exe"; Comment: "Launch {#MyAppName}"; WorkingDir: "{app}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\Main.exe"; Comment: "Launch {#MyAppName}"; WorkingDir: "{app}"; IconFilename: "{app}\Main.exe"
 Name: "{group}\Configuration"; Filename: "notepad.exe"; Parameters: """{app}\config.json"""; Comment: "Edit configuration"
 Name: "{group}\Documentation"; Filename: "{app}\README.md"; Comment: "Read documentation"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"; Comment: "Uninstall {#MyAppName}"
 
 ; Desktop Icon (optional)
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\Main.exe"; Comment: "Launch {#MyAppName}"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\Main.exe"; Comment: "Launch {#MyAppName}"; WorkingDir: "{app}"; Tasks: desktopicon; IconFilename: "{app}\Main.exe"
 
 [Run]
 ; Launch after installation
