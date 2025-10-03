@@ -58,11 +58,20 @@ $readmeContent = @"
 
 ## 🚀 Quick Start
 
-**Double-click `RustyBot.vbs`** - Launches RustyBot cleanly (no console window)
+### First Time Setup
+1. **Double-click RustyBot.vbs** - Launches RustyBot
+2. A welcome dialog will appear asking for **your Twitch channel name**
+3. Enter your channel name (e.g., "yourchannelname")
+4. Click OK - You're done!
+
+### Every Time After
+**Double-click RustyBot.vbs** - Bot automatically connects to your channel!
 
 OR
 
-**Double-click `RustyBot.bat`** - Launches RustyBot (shows brief console message)
+**Double-click RustyBot.bat** - Alternative launcher (shows console briefly)
+
+**Note**: After first setup, the bot remembers your channel forever!
 
 ## 📁 Folder Structure
 
@@ -97,8 +106,22 @@ The `secure.env` file contains encrypted Twitch credentials:
 
 ## ⚙️ Configuration
 
-**To change settings:**
-1. Edit `config.json` in the root folder
+### First-Run Setup (Automatic!)
+On first launch, you'll be asked for **your Twitch channel name**.
+- Just enter your channel (e.g., "yourchannelname")
+- No need for a bot token or credentials!
+- The bot is pre-configured and ready to go
+
+### To Change Your Channel Later
+1. Open RustyBot
+2. Click the Options button (⚙️ icon)
+3. Update "Your Twitch Channel"
+4. Click Save
+5. Restart the bot
+
+### Other Settings
+**To change app settings:**
+1. Edit config.json in the root folder
 2. **DO NOT edit secure.env** - it contains encrypted credentials
 3. Restart RustyBot
 
