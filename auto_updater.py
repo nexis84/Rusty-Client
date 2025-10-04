@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.4.9"
+CURRENT_VERSION = "1.5.0"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"
@@ -161,12 +161,24 @@ class AutoUpdater:
                 update_script = self._create_windows_folder_update_script(
                     new_app_dir, current_dir, current_exe
                 )
-                # Run update script and exit application immediately
+                # Run update script in separate process
                 subprocess.Popen(update_script, shell=True, creationflags=subprocess.CREATE_NEW_CONSOLE if sys.platform == 'win32' else 0)
-                # Give script a moment to start, then quit
+                
+                # CRITICAL: Force immediate exit so update script can replace files
                 import time
-                time.sleep(0.5)
-                sys.exit(0)  # CRITICAL: Must exit so update script can replace files
+                time.sleep(0.5)  # Give script time to start
+                
+                # Quit Qt application first
+                try:
+                    from PyQt6.QtWidgets import QApplication
+                    app = QApplication.instance()
+                    if app:
+                        app.quit()
+                except:
+                    pass
+                
+                # Force immediate process termination (no cleanup, just exit)
+                os._exit(0)  # More forceful than sys.exit() - bypasses cleanup
                 return True, "Update will complete after restart"
             else:
                 return False, "Auto-update only supported on Windows"
@@ -233,25 +245,38 @@ exit
     def _create_windows_folder_update_script(self, new_app_dir, current_dir, current_exe):
         """Create a Windows batch script to update the entire folder"""
         backup_dir = current_dir + "_backup"
+        log_file = os.path.join(current_dir, "update_log.txt")
         script = f"""
 @echo off
+set LOGFILE={log_file}
+echo ======================================== > "%LOGFILE%"
+echo   RustyBot Auto-Update v1.5.0 >> "%LOGFILE%"
+echo   Started: %DATE% %TIME% >> "%LOGFILE%"
+echo ======================================== >> "%LOGFILE%"
+
 echo ========================================
-echo   RustyBot Auto-Update v1.4.8
+echo   RustyBot Auto-Update v1.5.0
+echo   Log: {log_file}
 echo ========================================
 echo.
 echo Waiting for application to close...
+echo [%TIME%] Waiting 5 seconds for app to close... >> "%LOGFILE%"
 timeout /t 5 /nobreak >nul
 
 REM Force kill any Main.exe processes (repeat multiple times)
 echo Terminating RustyBot...
+echo [%TIME%] Killing Main.exe and QtWebEngineProcess.exe... >> "%LOGFILE%"
 taskkill /F /IM Main.exe >nul 2>&1
+echo [%TIME%] First kill attempt done >> "%LOGFILE%"
 taskkill /F /IM QtWebEngineProcess.exe >nul 2>&1
 timeout /t 1 /nobreak >nul
 taskkill /F /IM Main.exe >nul 2>&1
+echo [%TIME%] Second kill attempt done >> "%LOGFILE%"
 taskkill /F /IM QtWebEngineProcess.exe >nul 2>&1
 
 REM Wait for Windows to release all file handles (extended)
 echo Waiting for file handles to release...
+echo [%TIME%] Waiting 5 seconds for file handles... >> "%LOGFILE%"
 timeout /t 5 /nobreak >nul
 
 REM Additional safety check - verify Main.exe is not running
@@ -259,35 +284,43 @@ REM Additional safety check - verify Main.exe is not running
 tasklist /FI "IMAGENAME eq Main.exe" 2>NUL | find /I /N "Main.exe">NUL
 if "%ERRORLEVEL%"=="0" (
     echo Still waiting for Main.exe to close...
+    echo [%TIME%] Main.exe still running, killing again... >> "%LOGFILE%"
     taskkill /F /IM Main.exe >nul 2>&1
     timeout /t 2 /nobreak >nul
     goto CHECK_PROCESS
 )
 
 echo All processes closed. Proceeding with update...
+echo [%TIME%] All processes confirmed closed >> "%LOGFILE%"
 
 echo Creating backup...
+echo [%TIME%] Creating backup directory... >> "%LOGFILE%"
 if exist "{backup_dir}" (
     rmdir /S /Q "{backup_dir}"
 )
 mkdir "{backup_dir}"
 
 echo Backing up current installation...
+echo [%TIME%] Backing up files... >> "%LOGFILE%"
 xcopy /E /I /Y /Q "{current_dir}" "{backup_dir}" >nul
 
 echo Applying update...
+echo [%TIME%] Copying new files... >> "%LOGFILE%"
 xcopy /E /I /Y /Q "{new_app_dir}\*" "{current_dir}" >nul
 
 if errorlevel 1 (
     echo.
     echo Update failed! Restoring backup...
+    echo [%TIME%] UPDATE FAILED! Restoring backup... >> "%LOGFILE%"
     xcopy /E /I /Y /Q "{backup_dir}\*" "{current_dir}" >nul
+    echo [%TIME%] Backup restored >> "%LOGFILE%"
     echo Press any key to exit...
     pause >nul
     exit /b 1
 )
 
 echo Cleaning up...
+echo [%TIME%] Cleaning up backup and temp files... >> "%LOGFILE%"
 rmdir /S /Q "{backup_dir}" 2>nul
 rmdir /S /Q "{os.path.dirname(new_app_dir)}" 2>nul
 
@@ -297,8 +330,10 @@ echo   Update Complete!
 echo ========================================
 echo.
 echo Restarting RustyBot...
+echo [%TIME%] Restarting application... >> "%LOGFILE%"
 timeout /t 2 /nobreak >nul
 start "" "{current_exe}"
+echo [%TIME%] Update script finished successfully >> "%LOGFILE%"
 exit
 """
         script_path = os.path.join(tempfile.gettempdir(), "rustybot_folder_update.bat")
