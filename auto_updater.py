@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.4.8"
+CURRENT_VERSION = "1.4.9"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"
@@ -161,8 +161,12 @@ class AutoUpdater:
                 update_script = self._create_windows_folder_update_script(
                     new_app_dir, current_dir, current_exe
                 )
-                # Run update script and exit
-                subprocess.Popen(update_script, shell=True)
+                # Run update script and exit application immediately
+                subprocess.Popen(update_script, shell=True, creationflags=subprocess.CREATE_NEW_CONSOLE if sys.platform == 'win32' else 0)
+                # Give script a moment to start, then quit
+                import time
+                time.sleep(0.5)
+                sys.exit(0)  # CRITICAL: Must exit so update script can replace files
                 return True, "Update will complete after restart"
             else:
                 return False, "Auto-update only supported on Windows"
@@ -236,23 +240,27 @@ echo   RustyBot Auto-Update v1.4.8
 echo ========================================
 echo.
 echo Waiting for application to close...
-timeout /t 3 /nobreak >nul
+timeout /t 5 /nobreak >nul
 
-REM Force kill any Main.exe processes
+REM Force kill any Main.exe processes (repeat multiple times)
 echo Terminating RustyBot...
 taskkill /F /IM Main.exe >nul 2>&1
 taskkill /F /IM QtWebEngineProcess.exe >nul 2>&1
+timeout /t 1 /nobreak >nul
+taskkill /F /IM Main.exe >nul 2>&1
+taskkill /F /IM QtWebEngineProcess.exe >nul 2>&1
 
-REM Wait for Windows to release all file handles (critical!)
+REM Wait for Windows to release all file handles (extended)
 echo Waiting for file handles to release...
-timeout /t 3 /nobreak >nul
+timeout /t 5 /nobreak >nul
 
 REM Additional safety check - verify Main.exe is not running
 :CHECK_PROCESS
 tasklist /FI "IMAGENAME eq Main.exe" 2>NUL | find /I /N "Main.exe">NUL
 if "%ERRORLEVEL%"=="0" (
     echo Still waiting for Main.exe to close...
-    timeout /t 1 /nobreak >nul
+    taskkill /F /IM Main.exe >nul 2>&1
+    timeout /t 2 /nobreak >nul
     goto CHECK_PROCESS
 )
 

@@ -1177,7 +1177,7 @@ class GiveawayApp(QWidget):
         self.widget_drag_handler.add_widget(self.main_stack)
         self.widget_drag_handler.geometry_changed.connect(self._handle_widget_geometry_change)
 
-        self.setWindowTitle("Rusty Bot v1.4.8 - Auto-Update Working Perfectly!")
+        self.setWindowTitle("Rusty Bot v1.4.9 - Auto-Update REALLY Working Now!")
         QTimer.singleShot(0, self._delayed_finalize_setup)
 
     def _delayed_finalize_setup(self):
