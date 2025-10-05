@@ -21,23 +21,14 @@ echo.
 
 REM Get the directory where this script is located (should be the RustyBot installation directory)
 set "INSTALL_DIR=%~dp0"
-set "LAUNCHER_PATH=%INSTALL_DIR%Launcher.exe"
-set "MAIN_PATH=%INSTALL_DIR%Main.exe"
+set "RUSTYBOT_PATH=%INSTALL_DIR%RustyBot.exe"
 
 echo Install Directory: %INSTALL_DIR%
 echo.
 
-REM Check if executables exist
-if not exist "%LAUNCHER_PATH%" (
-    echo WARNING: Launcher.exe not found at: %LAUNCHER_PATH%
-    echo Please ensure this script is in the RustyBot installation directory.
-    echo.
-    pause
-    exit /b 1
-)
-
-if not exist "%MAIN_PATH%" (
-    echo WARNING: Main.exe not found at: %MAIN_PATH%  
+REM Check if executable exists
+if not exist "%RUSTYBOT_PATH%" (
+    echo WARNING: RustyBot.exe not found at: %RUSTYBOT_PATH%
     echo Please ensure this script is in the RustyBot installation directory.
     echo.
     pause
@@ -47,32 +38,16 @@ if not exist "%MAIN_PATH%" (
 echo Adding Windows Firewall exceptions for RustyBot...
 echo.
 
-REM Add firewall rules for Launcher.exe
-echo Adding rules for Launcher.exe...
-netsh advfirewall firewall add rule name="RustyBot Launcher (Inbound)" dir=in action=allow program="%LAUNCHER_PATH%" >nul 2>&1
+REM Add firewall rules for RustyBot.exe
+echo Adding rules for RustyBot.exe...
+netsh advfirewall firewall add rule name="RustyBot (Inbound)" dir=in action=allow program="%RUSTYBOT_PATH%" >nul 2>&1
 if %errorLevel% equ 0 (
     echo   ^> Inbound rule added successfully
 ) else (
     echo   ^> Error adding inbound rule
 )
 
-netsh advfirewall firewall add rule name="RustyBot Launcher (Outbound)" dir=out action=allow program="%LAUNCHER_PATH%" >nul 2>&1
-if %errorLevel% equ 0 (
-    echo   ^> Outbound rule added successfully
-) else (
-    echo   ^> Error adding outbound rule
-)
-
-REM Add firewall rules for Main.exe
-echo Adding rules for Main.exe...
-netsh advfirewall firewall add rule name="RustyBot Main (Inbound)" dir=in action=allow program="%MAIN_PATH%" >nul 2>&1
-if %errorLevel% equ 0 (
-    echo   ^> Inbound rule added successfully
-) else (
-    echo   ^> Error adding inbound rule
-)
-
-netsh advfirewall firewall add rule name="RustyBot Main (Outbound)" dir=out action=allow program="%MAIN_PATH%" >nul 2>&1
+netsh advfirewall firewall add rule name="RustyBot (Outbound)" dir=out action=allow program="%RUSTYBOT_PATH%" >nul 2>&1
 if %errorLevel% equ 0 (
     echo   ^> Outbound rule added successfully
 ) else (

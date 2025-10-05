@@ -21,28 +21,18 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 function Add-RustyBotFirewallRules {
     param([string]$Path)
     
-    $LauncherPath = Join-Path $Path "Launcher.exe"
-    $MainPath = Join-Path $Path "Main.exe"
+    $RustyBotPath = Join-Path $Path "RustyBot.exe"
     
     Write-Host "Adding Windows Firewall exceptions for RustyBot..." -ForegroundColor Green
     
     try {
-        # Add rules for Launcher.exe
-        if (Test-Path $LauncherPath) {
-            netsh advfirewall firewall add rule name="RustyBot Launcher (Inbound)" dir=in action=allow program="$LauncherPath" | Out-Null
-            netsh advfirewall firewall add rule name="RustyBot Launcher (Outbound)" dir=out action=allow program="$LauncherPath" | Out-Null
-            Write-Host "✓ Added firewall rules for Launcher.exe" -ForegroundColor Green
+        # Add rules for RustyBot.exe
+        if (Test-Path $RustyBotPath) {
+            netsh advfirewall firewall add rule name="RustyBot (Inbound)" dir=in action=allow program="$RustyBotPath" | Out-Null
+            netsh advfirewall firewall add rule name="RustyBot (Outbound)" dir=out action=allow program="$RustyBotPath" | Out-Null
+            Write-Host "✓ Added firewall rules for RustyBot.exe" -ForegroundColor Green
         } else {
-            Write-Host "⚠ Launcher.exe not found at: $LauncherPath" -ForegroundColor Yellow
-        }
-        
-        # Add rules for Main.exe
-        if (Test-Path $MainPath) {
-            netsh advfirewall firewall add rule name="RustyBot Main (Inbound)" dir=in action=allow program="$MainPath" | Out-Null
-            netsh advfirewall firewall add rule name="RustyBot Main (Outbound)" dir=out action=allow program="$MainPath" | Out-Null
-            Write-Host "✓ Added firewall rules for Main.exe" -ForegroundColor Green
-        } else {
-            Write-Host "⚠ Main.exe not found at: $MainPath" -ForegroundColor Yellow
+            Write-Host "⚠ RustyBot.exe not found at: $RustyBotPath" -ForegroundColor Yellow
         }
         
         Write-Host "`nWindows Firewall exceptions have been successfully added for RustyBot!" -ForegroundColor Green
@@ -58,15 +48,10 @@ function Remove-RustyBotFirewallRules {
     Write-Host "Removing Windows Firewall exceptions for RustyBot..." -ForegroundColor Yellow
     
     try {
-        # Remove Launcher rules
-        netsh advfirewall firewall delete rule name="RustyBot Launcher (Inbound)" | Out-Null
-        netsh advfirewall firewall delete rule name="RustyBot Launcher (Outbound)" | Out-Null
-        Write-Host "✓ Removed firewall rules for Launcher.exe" -ForegroundColor Green
-        
-        # Remove Main rules
-        netsh advfirewall firewall delete rule name="RustyBot Main (Inbound)" | Out-Null
-        netsh advfirewall firewall delete rule name="RustyBot Main (Outbound)" | Out-Null
-        Write-Host "✓ Removed firewall rules for Main.exe" -ForegroundColor Green
+        # Remove RustyBot rules
+        netsh advfirewall firewall delete rule name="RustyBot (Inbound)" | Out-Null
+        netsh advfirewall firewall delete rule name="RustyBot (Outbound)" | Out-Null
+        Write-Host "✓ Removed firewall rules for RustyBot.exe" -ForegroundColor Green
         
         Write-Host "`nWindows Firewall exceptions have been successfully removed for RustyBot!" -ForegroundColor Green
         

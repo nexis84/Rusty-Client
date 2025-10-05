@@ -19,7 +19,7 @@ Write-Host @"
 "@ -ForegroundColor Cyan
 
 # Step 1: Update version numbers in all files
-Write-Host "`n[1/7] Updating version numbers..." -ForegroundColor Yellow
+Write-Host "`n[1/6] Updating version numbers..." -ForegroundColor Yellow
 
 # Update Main.py
 if (Test-Path "Main.py") {
@@ -46,7 +46,7 @@ if (Test-Path "installer_improved.iss") {
 }
 
 # Step 2: Clean previous builds
-Write-Host "`n[2/7] Cleaning previous builds..." -ForegroundColor Yellow
+Write-Host "`n[2/6] Cleaning previous builds..." -ForegroundColor Yellow
 $cleanDirs = @("build", "dist", "github upload\RustyBot_v${Version}_Standalone")
 $cleanFiles = @("github upload\RustyBot_v${Version}_Standalone.zip", "github upload\RustyBot_Setup_v${Version}.0.exe")
 
@@ -65,7 +65,7 @@ foreach ($file in $cleanFiles) {
 }
 
 # Step 3: Build main RustyBot executable
-Write-Host "`n[3/7] Building RustyBot.exe..." -ForegroundColor Yellow
+Write-Host "`n[3/6] Building RustyBot.exe..." -ForegroundColor Yellow
 pyinstaller --clean --noconfirm RustyBot.spec
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  X RustyBot build failed!" -ForegroundColor Red
@@ -75,30 +75,31 @@ $rustySize = (Get-Item "dist\RustyBot.exe").Length / 1MB
 $rustySizeRounded = [math]::Round($rustySize, 2)
 Write-Host "  + RustyBot.exe built successfully ($rustySizeRounded MB)" -ForegroundColor Green
 
-# Step 4: Build single-file Launcher with update checking
-Write-Host "`n[4/7] Building Launcher.exe with update checking..." -ForegroundColor Yellow
-if (Test-Path "simple_launcher.py") {
-    pyinstaller --onefile --windowed --icon=icon.ico --name=Launcher simple_launcher.py
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  X Launcher build failed!" -ForegroundColor Red
-        exit 1
-    }
-    $launcherSize = (Get-Item "dist\Launcher.exe").Length / 1MB
-    $launcherSizeRounded = [math]::Round($launcherSize, 2)
-    Write-Host "  + Launcher.exe built successfully ($launcherSizeRounded MB)" -ForegroundColor Green
-} else {
-    Write-Host "  X Error: simple_launcher.py not found!" -ForegroundColor Red
-    exit 1
-}
-
-# Step 5: Create standalone ZIP package
-Write-Host "`n[5/7] Creating standalone ZIP package..." -ForegroundColor Yellow
+# Step 4: Create standalone ZIP package (no launcher needed)
+Write-Host "`n[4/6] Creating standalone ZIP package..." -ForegroundColor Yellow
 $outputPath = "github upload\RustyBot_v${Version}_Standalone"
 New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
 
 # Copy all files from dist folder
 Write-Host "  > Copying dist folder contents..." -ForegroundColor Gray
 Copy-Item "dist\*" "$outputPath\" -Recurse -Force
+
+# Clean up old unused files from the package
+Write-Host "  > Removing old unused files..." -ForegroundColor Gray
+$oldFiles = @(
+    "$outputPath\Launcher.exe",
+    "$outputPath\Main.exe",
+    "$outputPath\RustyBot_Web_Updater.exe",
+    "$outputPath\simple_launcher.py",
+    "$outputPath\launcher.py",
+    "$outputPath\transition_launcher.py"
+)
+foreach ($file in $oldFiles) {
+    if (Test-Path $file) {
+        Remove-Item $file -Force
+        Write-Host "    - Removed $(Split-Path $file -Leaf)" -ForegroundColor DarkGray
+    }
+}
 
 Write-Host "  + Package folder created" -ForegroundColor Green
 
@@ -109,8 +110,8 @@ $zipSize = (Get-Item "github upload\RustyBot_v${Version}_Standalone.zip").Length
 $zipSizeRounded = [math]::Round($zipSize, 2)
 Write-Host "  + ZIP created ($zipSizeRounded MB)" -ForegroundColor Green
 
-# Step 6: Build professional installer
-Write-Host "`n[6/7] Building professional installer..." -ForegroundColor Yellow
+# Step 5: Build professional installer
+Write-Host "`n[5/6] Building professional installer..." -ForegroundColor Yellow
 $innoSetupPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
 if (Test-Path $innoSetupPath) {
     & $innoSetupPath "installer_improved.iss" /Q
@@ -130,8 +131,8 @@ if (Test-Path $innoSetupPath) {
     exit 1
 }
 
-# Step 7: Create/Update release notes
-Write-Host "`n[7/7] Creating release notes..." -ForegroundColor Yellow
+# Step 6: Create/Update release notes
+Write-Host "`n[6/6] Creating release notes..." -ForegroundColor Yellow
 $releaseNotes = @"
 # RustyBot v$Version Release Notes
 
@@ -159,25 +160,16 @@ $releaseNotes = @"
 ### 2. Standalone ZIP Package
 **RustyBot_v${Version}_Standalone.zip**
 - Portable - run from any location
-- Includes Launcher.exe for update checking
+- Manual update checking available in options dialog
 - Manual setup required
 
 ## 🚀 Components Included
 
 Both packages include:
-- **Launcher.exe** - Smart launcher with automatic update checking
-- **RustyBot.exe v$Version** - Main application with corrected window title
-- **RustyBot_Web_Updater.exe** - Fallback web-based updater
+- **RustyBot.exe v$Version** - Main application with manual update checking
 - Configuration files (config.json, secure.env, qt.conf)
 - Assets (animations, sounds, fonts)
 - Documentation (README.md, SECURE_CREDENTIALS_SETUP.md)
-
-## ✨ New Features in Launcher
-- Automatic GitHub release checking on startup
-- Professional update dialog with release notes
-- Real-time download progress bar
-- One-click update installation
-- Seamless update experience
 
 ## 📋 Installation Instructions
 
@@ -190,9 +182,9 @@ Both packages include:
 ### Using the Standalone ZIP
 1. Download RustyBot_v${Version}_Standalone.zip
 2. Extract to your preferred location
-3. Run Launcher.exe to check for updates
+3. Run RustyBot.exe directly
 4. Configure your credentials in secure.env
-5. Run the application
+5. Check for updates manually through Options → Check for Updates
 
 ## 🔒 Security Notes
 - Installer automatically configures Windows Defender exclusions
@@ -213,7 +205,7 @@ Both packages include:
 
 **Version**: $Version  
 **Release Date**: $(Get-Date -Format 'MMMM d, yyyy')  
-**Build Type**: Professional Release with Update System
+**Build Type**: Professional Release with Manual Update System
 "@
 
 Set-Content "github upload\RELEASE_NOTES_v${Version}.md" -Value $releaseNotes

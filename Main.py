@@ -62,14 +62,57 @@ else:
     secure_env_path = os.path.join(script_dir, 'secure.env')
     env_path = os.path.join(script_dir, '.env')
 
-# Load environment variables from .env file
-print(f"Loading credentials from .env: {env_path}")
-if os.path.exists(env_path):
-    load_dotenv(env_path, override=True)
-    print(f"✅ Loaded credentials from .env")
+# Load environment variables from encrypted secure.env file (or fallback to .env)
+# When packaged with PyInstaller/Nuitka, look for secure.env in multiple locations
+if getattr(sys, 'frozen', False):
+    # Running as compiled executable
+    # Check if we're in an 'app' subfolder (organized distribution)
+    exe_dir = os.path.dirname(sys.executable)
+    parent_dir = os.path.dirname(exe_dir)
+    
+    # Try parent directory first (for organized structure: root/secure.env and root/app/RustyBot.exe)
+    secure_env_path = os.path.join(parent_dir, 'secure.env')
+    env_path = os.path.join(parent_dir, '.env')
+    
+    # Fall back to exe directory if not found in parent
+    if not os.path.exists(secure_env_path) and not os.path.exists(env_path):
+        secure_env_path = os.path.join(exe_dir, 'secure.env')
+        env_path = os.path.join(exe_dir, '.env')
+    
+    # Also try _MEIPASS for PyInstaller compatibility
+    if not os.path.exists(secure_env_path) and not os.path.exists(env_path) and hasattr(sys, '_MEIPASS'):
+        secure_env_path = os.path.join(sys._MEIPASS, 'secure.env')
+        env_path = os.path.join(sys._MEIPASS, '.env')
 else:
-    print(f"⚠️ No .env file found at: {env_path}")
-    print(f"  Please create a .env file with your Twitch credentials")
+    # Running as normal Python script
+    script_dir = os.path.dirname(__file__)
+    secure_env_path = os.path.join(script_dir, 'secure.env')
+    env_path = os.path.join(script_dir, '.env')
+
+# Load environment variables from secure.env first, then fallback to .env
+secure_loaded = False
+if os.path.exists(secure_env_path):
+    try:
+        from secure_env_loader import SecureEnvLoader
+        loader = SecureEnvLoader()
+        secure_vars = loader.load_secure_env(secure_env_path)
+        if secure_vars:
+            print(f"✅ Loaded {len(secure_vars)} encrypted credentials from secure.env")
+            secure_loaded = True
+        else:
+            print(f"⚠️ secure.env file exists but no variables were loaded")
+    except Exception as e:
+        print(f"❌ Error loading secure.env: {e}")
+        print(f"  Falling back to .env file")
+
+if not secure_loaded:
+    print(f"Loading credentials from .env: {env_path}")
+    if os.path.exists(env_path):
+        load_dotenv(env_path, override=True)
+        print(f"✅ Loaded credentials from .env")
+    else:
+        print(f"⚠️ No .env file found at: {env_path}")
+        print(f"  Please create a .env file with your Twitch credentials")
 
 ENV_TWITCH_TOKEN = os.getenv('TWITCH_TOKEN', 'N/A')
 ENV_TWITCH_NICK = os.getenv('TWITCH_NICK', 'N/A')
@@ -162,7 +205,7 @@ from ui_manager import UIManager
 # --- Constants ---
 APP_NAME = "RustyBotGiveaway"
 ORG_NAME = "RustyBit"
-APP_VERSION = "1.7.7" 
+APP_VERSION = "1.8.1" 
 
 LOADING_IMAGE_FILE = "loading_init.png"  # Root level - not moved to assets
 SOUND_NOTIFICATION_KEY = "notification"
@@ -1912,7 +1955,7 @@ class GiveawayApp(QWidget):
         # If both prize and animation are set to random, pick a random animation type
         animation_type = self.config.get("animation_type", None)
         chosen_type = None
-        if self.current_prize == DROPDOWN_RANDOM_PRIZE_TEXT and (animation_type == "Random" or animation_type == "ANIM_TYPE_RANDOM_TECH"):
+        if self._needs_prize_reveal and (animation_type == "Random" or animation_type == "ANIM_TYPE_RANDOM_TECH"):
             # Exclude 'Random' and any non-actual animation types from the list
             valid_types = [t for t in VALID_ANIMATION_TYPES if t.lower() != "random"]
             chosen_type = random.choice(valid_types)
@@ -1921,6 +1964,12 @@ class GiveawayApp(QWidget):
                 self.animation_type_selector_main.setCurrentText(chosen_type)
             if self.config.get('debug_mode_enabled', False):
                 self.log_status(f"Random animation type selected: {chosen_type}")
+        elif self._needs_prize_reveal:
+            # For random prizes with fixed animation type, use the configured type
+            chosen_type = animation_type
+
+        # Store the chosen animation type for use in continuation
+        self._chosen_animation_type_for_draw = chosen_type
 
         self.selected_winner = "--- PENDING ANIMATION ---"
         self.update_displays()
@@ -3708,7 +3757,10 @@ class GiveawayApp(QWidget):
         
         if self.config.get('debug_mode_enabled', False):
             self.log_status("🎲 Prize reveal complete, starting winner draw animation...")
-        self._start_js_animation(is_continuation=True)
+        self._start_js_animation(is_continuation=True, animation_type_override=self._chosen_animation_type_for_draw)
+        
+        # Clear the stored animation type
+        self._chosen_animation_type_for_draw = None
 
     def _start_winner_draw_continuation(self):
         """Start the winner draw animation as a continuation of prize reveal"""

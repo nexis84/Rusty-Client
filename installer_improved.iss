@@ -3,10 +3,10 @@
 ; Version: 1.4.0
 
 #define MyAppName "RustyBot"
-#define MyAppVersion "1.7.7.0"
+#define MyAppVersion "1.8.1.0"
 #define MyAppPublisher "Nexis84"
 #define MyAppURL "https://github.com/nexis84/Rusty-Client"
-#define MyAppExeName "Launcher.exe"
+#define MyAppExeName "RustyBot.exe"
 #define MyAppDescription "Twitch Giveaway Bot for EVE Online"
 
 [Setup]
@@ -76,8 +76,7 @@ Name: "defenderexclusion"; Description: "Add Windows Defender exclusion (recomme
 Name: "firewallrule"; Description: "Add Windows Firewall rule (recommended)"; GroupDescription: "Security:"
 
 [Files]
-; Main Application Files - Launcher checks for updates
-Source: "Launcher.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Main Application Files
 Source: "dist\RustyBot.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Configuration Files
@@ -105,8 +104,9 @@ Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"; Comment: "Un
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Comment: "Launch {#MyAppName}"; WorkingDir: "{app}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"
 
 [Run]
-; Launch after installation
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent; WorkingDir: "{app}"
+; Launch after installation with proper delay and working directory
+; Using shellexec to launch in a new process tree, avoiding DLL handle issues
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: shellexec postinstall skipifsilent nowait; WorkingDir: "{app}"
 
 ; Open documentation
 Filename: "{app}\README.md"; Description: "View README"; Flags: postinstall skipifsilent shellexec unchecked
@@ -158,7 +158,7 @@ begin
     'RustyBot is a Twitch giveaway bot with:' + #13#10 +
     '  • Beautiful animated interface' + #13#10 +
     '  • Encrypted credential storage' + #13#10 +
-    '  • Automatic updates' + #13#10 +
+    '  • Manual update checking' + #13#10 +
     '  • EVE Online integration' + #13#10 + #13#10 +
     'IMPORTANT: This installer will:' + #13#10 +
     '  ✓ Add Windows Defender exclusion (prevents false positives)' + #13#10 +
@@ -202,27 +202,76 @@ end;
 procedure AddWindowsFirewallRule();
 var
   ResultCode: Integer;
-  ExePath: String;
+  RustyBotExePath: String;
 begin
   if IsTaskSelected('firewallrule') then
   begin
-  ExePath := ExpandConstant('{app}\{#MyAppExeName}');
-    Log('Adding Windows Firewall rule for: ' + ExePath);
-    
-    // Inbound rule
-    Exec('powershell.exe', '-Command "New-NetFirewallRule -DisplayName ''RustyBot'' -Direction Inbound -Program ''' + ExePath + ''' -Action Allow -Profile Any -ErrorAction SilentlyContinue"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    
-    // Outbound rule  
-    Exec('powershell.exe', '-Command "New-NetFirewallRule -DisplayName ''RustyBot Outbound'' -Direction Outbound -Program ''' + ExePath + ''' -Action Allow -Profile Any -ErrorAction SilentlyContinue"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    
-    Log('Firewall rules added');
+  RustyBotExePath := ExpandConstant('{app}\RustyBot.exe');
+
+    Log('Adding Windows Firewall rules for RustyBot');
+
+    // Inbound rules
+    Exec('powershell.exe', '-Command "New-NetFirewallRule -DisplayName ''RustyBot'' -Direction Inbound -Program ''' + RustyBotExePath + ''' -Action Allow -Profile Any -ErrorAction SilentlyContinue"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+    // Outbound rules
+    Exec('powershell.exe', '-Command "New-NetFirewallRule -DisplayName ''RustyBot Outbound'' -Direction Outbound -Program ''' + RustyBotExePath + ''' -Action Allow -Profile Any -ErrorAction SilentlyContinue"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+    Log('Firewall rules added for RustyBot.exe');
   end;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  OldFilePath: String;
 begin
   if CurStep = ssPostInstall then
   begin
+    // Clean up old unused files from previous versions
+    Log('Cleaning up old unused files...');
+    OldFilePath := ExpandConstant('{app}\Launcher.exe');
+    if FileExists(OldFilePath) then
+    begin
+      DeleteFile(OldFilePath);
+      Log('Removed old file: Launcher.exe');
+    end;
+    
+    OldFilePath := ExpandConstant('{app}\Main.exe');
+    if FileExists(OldFilePath) then
+    begin
+      DeleteFile(OldFilePath);
+      Log('Removed old file: Main.exe');
+    end;
+    
+    OldFilePath := ExpandConstant('{app}\RustyBot_Web_Updater.exe');
+    if FileExists(OldFilePath) then
+    begin
+      DeleteFile(OldFilePath);
+      Log('Removed old file: RustyBot_Web_Updater.exe');
+    end;
+    
+    OldFilePath := ExpandConstant('{app}\simple_launcher.py');
+    if FileExists(OldFilePath) then
+    begin
+      DeleteFile(OldFilePath);
+      Log('Removed old file: simple_launcher.py');
+    end;
+    
+    OldFilePath := ExpandConstant('{app}\launcher.py');
+    if FileExists(OldFilePath) then
+    begin
+      DeleteFile(OldFilePath);
+      Log('Removed old file: launcher.py');
+    end;
+    
+    OldFilePath := ExpandConstant('{app}\transition_launcher.py');
+    if FileExists(OldFilePath) then
+    begin
+      DeleteFile(OldFilePath);
+      Log('Removed old file: transition_launcher.py');
+    end;
+    
+    Log('Old files cleanup complete');
+    
     // Add Windows Defender exclusion after files are copied
     AddWindowsDefenderExclusion();
     
@@ -239,7 +288,7 @@ begin
   NeedsRestart := False;
   
   // Terminate any running RustyBot processes right before installation
-  // Note: We don't kill Launcher.exe here because the user might have launched the installer from it
+  // Note: Launcher.exe is no longer included in the installation
   Log('Terminating running RustyBot processes...');
   Exec('taskkill', '/F /IM RustyBot.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Log('Terminated RustyBot.exe (if running)');

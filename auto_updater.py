@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.7.7"
+CURRENT_VERSION = "1.8.1"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"
@@ -61,34 +61,69 @@ class AutoUpdater:
             return None, None, f"Error: {str(e)}"
     
     def download_update(self, progress_callback=None):
-        """Download the latest version"""
+        """Download the latest version with optimized speed"""
         if not self.download_url:
             return False, "No download URL available"
-        
+
         try:
             # Create temp directory
             temp_dir = tempfile.mkdtemp(prefix="rustybot_update_")
             download_name = self.asset_name or os.path.basename(self.download_url)
             temp_file_path = os.path.join(temp_dir, download_name)
-            
-            # Download with progress
-            response = requests.get(self.download_url, stream=True, timeout=30)
-            response.raise_for_status()
-            
-            total_size = int(response.headers.get('content-length', 0))
-            downloaded = 0
-            
-            with open(temp_file_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        if progress_callback and total_size > 0:
-                            progress = int((downloaded / total_size) * 100)
-                            progress_callback(progress)
-            
+
+            # Use a session for connection reuse and better performance
+            with requests.Session() as session:
+                # Configure session for better performance
+                adapter = requests.adapters.HTTPAdapter(
+                    pool_connections=10,
+                    pool_maxsize=10,
+                    max_retries=3,
+                    pool_block=False
+                )
+                session.mount('http://', adapter)
+                session.mount('https://', adapter)
+
+                # Set headers for better performance
+                headers = {
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'User-Agent': 'RustyBot-Updater/1.0',
+                    'Accept': '*/*'
+                }
+
+                # Download with optimized settings
+                response = session.get(
+                    self.download_url,
+                    stream=True,
+                    timeout=60,  # Increased timeout for large files
+                    headers=headers
+                )
+                response.raise_for_status()
+
+                total_size = int(response.headers.get('content-length', 0))
+                downloaded = 0
+                start_time = os.times()[4] if hasattr(os, 'times') else 0  # CPU time for speed calc
+
+                # Use larger chunk size for better performance (128KB)
+                chunk_size = 128 * 1024  # 128KB chunks
+
+                with open(temp_file_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        if chunk:
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if progress_callback and total_size > 0:
+                                progress = int((downloaded / total_size) * 100)
+                                progress_callback(progress)
+
+                # Log download speed
+                if start_time and total_size > 0:
+                    end_time = os.times()[4] if hasattr(os, 'times') else 0
+                    duration = max(end_time - start_time, 0.1)  # Avoid division by zero
+                    speed_mbps = (downloaded / duration) / (1024 * 1024)
+                    print(f"DOWNLOAD: Completed {downloaded} bytes in {duration:.1f}s ({speed_mbps:.2f} MB/s)")
+
             return True, temp_file_path
-            
+
         except Exception as e:
             return False, f"Download failed: {str(e)}"
     
@@ -256,6 +291,10 @@ class AutoUpdater:
     
     def _create_windows_update_script(self, new_exe, current_exe, backup_exe):
         """Create a Windows batch script to perform the update"""
+        # Ensure we always restart RustyBot.exe
+        current_dir = os.path.dirname(current_exe)
+        rustybot_exe = os.path.join(current_dir, "RustyBot.exe")
+        
         script = f"""
 @echo off
 timeout /t 2 /nobreak >nul
@@ -277,7 +316,13 @@ if errorlevel 1 (
 )
 
 echo Update complete! Restarting...
-start "" "{current_exe}"
+timeout /t 2 /nobreak >nul
+cd /d "{current_dir}"
+if exist "{rustybot_exe}" (
+    start "" "{rustybot_exe}"
+) else (
+    start "" "{current_exe}"
+)
 del /F /Q "{backup_exe}" 2>nul
 exit
 """
@@ -285,6 +330,29 @@ exit
         with open(script_path, 'w') as f:
             f.write(script)
         return script_path
+    
+    def _cleanup_old_files(self, install_dir):
+        """Remove old/unused files from previous versions"""
+        old_files = [
+            'Launcher.exe',
+            'simple_launcher.py',
+            'launcher.py',
+            'transition_launcher.py',
+            'Main.exe',
+            'RustyBot_Web_Updater.exe'
+        ]
+        
+        removed_files = []
+        for old_file in old_files:
+            file_path = os.path.join(install_dir, old_file)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    removed_files.append(old_file)
+                except Exception as e:
+                    print(f"WARNING: Could not remove {old_file}: {e}")
+        
+        return removed_files
     
     def _create_windows_folder_update_script(self, new_app_dir, current_dir, current_exe):
         """Create a Windows batch script to update the entire folder"""
@@ -294,12 +362,12 @@ exit
 @echo off
 set LOGFILE={log_file}
 echo ======================================== > "%LOGFILE%"
-echo   RustyBot Auto-Update v1.5.0 >> "%LOGFILE%"
+echo   RustyBot Auto-Update v1.8.0 >> "%LOGFILE%"
 echo   Started: %DATE% %TIME% >> "%LOGFILE%"
 echo ======================================== >> "%LOGFILE%"
 
 echo ========================================
-echo   RustyBot Auto-Update v1.5.0
+echo   RustyBot Auto-Update v1.8.0
 echo   Log: {log_file}
 echo ========================================
 echo.
@@ -363,6 +431,19 @@ if errorlevel 1 (
     exit /b 1
 )
 
+echo Removing old unused files...
+echo [%TIME%] Cleaning up old files... >> "%LOGFILE%"
+del /F /Q "{current_dir}\Launcher.exe" 2>nul
+echo [%TIME%] Removed Launcher.exe (if existed) >> "%LOGFILE%"
+del /F /Q "{current_dir}\Main.exe" 2>nul
+echo [%TIME%] Removed Main.exe (if existed) >> "%LOGFILE%"
+del /F /Q "{current_dir}\RustyBot_Web_Updater.exe" 2>nul
+echo [%TIME%] Removed RustyBot_Web_Updater.exe (if existed) >> "%LOGFILE%"
+del /F /Q "{current_dir}\simple_launcher.py" 2>nul
+del /F /Q "{current_dir}\launcher.py" 2>nul
+del /F /Q "{current_dir}\transition_launcher.py" 2>nul
+echo [%TIME%] Old files cleanup complete >> "%LOGFILE%"
+
 echo Cleaning up...
 echo [%TIME%] Cleaning up backup and temp files... >> "%LOGFILE%"
 rmdir /S /Q "{backup_dir}" 2>nul
@@ -373,11 +454,22 @@ echo ========================================
 echo   Update Complete!
 echo ========================================
 echo.
+echo Waiting for all file handles to release...
+echo [%TIME%] Final wait before restart (10 seconds)... >> "%LOGFILE%"
+timeout /t 10 /nobreak >nul
+
 echo Restarting RustyBot...
 echo [%TIME%] Restarting application... >> "%LOGFILE%"
-timeout /t 2 /nobreak >nul
-start "" "{current_exe}"
+cd /d "{current_dir}"
+if exist "{current_dir}\RustyBot.exe" (
+    echo [%TIME%] Starting RustyBot.exe... >> "%LOGFILE%"
+    start "" "{current_dir}\RustyBot.exe"
+) else (
+    echo [%TIME%] WARNING: RustyBot.exe not found, trying fallback... >> "%LOGFILE%"
+    start "" "{current_exe}"
+)
 echo [%TIME%] Update script finished successfully >> "%LOGFILE%"
+timeout /t 2 /nobreak >nul
 exit
 """
         script_path = os.path.join(tempfile.gettempdir(), "rustybot_folder_update.bat")
