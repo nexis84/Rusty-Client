@@ -46,6 +46,9 @@ release/
 installer_output/
 RustyBot.exe
 *.exe
+_inspect_update/
+github upload/
+dist_launcher/
 
 # Unit test / coverage reports
 htmlcov/
@@ -87,7 +90,6 @@ backup/
 # Environment variables (sensitive credentials)
 .env
 secure.env
-.tio.tokens.json
 # But include the example template
 !.env.example
 
@@ -96,23 +98,3 @@ user_config.json
 
 # Local configuration (if you want to keep config.json out)
 # config.json
-
-# Ignore test_package build artifacts
-test_package/
-
-# Local backups and large build artifacts (moved out of repository)
-backup remove/
-"github upload"/
-github\ upload/
-
-# Web updater build outputs
-web_updater/dist/
-web_updater/build/
-
-# Temporary installer/extract folders
-_installed_temp/
-_installed_temp_diag/
-
-# Installer and build outputs
-installer_output/
-dist_launcher/

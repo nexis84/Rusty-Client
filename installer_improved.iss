@@ -3,7 +3,7 @@
 ; Version: 1.4.0
 
 #define MyAppName "RustyBot"
-#define MyAppVersion "1.7.6.0"
+#define MyAppVersion "1.7.7.0"
 #define MyAppPublisher "Nexis84"
 #define MyAppURL "https://github.com/nexis84/Rusty-Client"
 #define MyAppExeName "Launcher.exe"
