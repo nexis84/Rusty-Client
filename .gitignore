@@ -1,0 +1,118 @@
+# Python Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec.bak
+
+# Nuitka build folders
+Main.build/
+Main.dist/
+Main.onefile-build/
+*.build/
+*.dist/
+*.onefile-build/
+nuitka-crash-report.xml
+
+# Distribution packages
+release/
+installer_output/
+RustyBot.exe
+*.exe
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Test files (except verification scripts)
+tests/*
+!tests/check_dependencies.py
+!tests/verify_assets.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup files
+*.bak
+*.bk
+backup/
+
+# Logs
+*.log
+
+# Environment variables (sensitive credentials)
+.env
+secure.env
+.tio.tokens.json
+# But include the example template
+!.env.example
+
+# User configuration
+user_config.json
+
+# Local configuration (if you want to keep config.json out)
+# config.json
+
+# Ignore test_package build artifacts
+test_package/
+
+# Local backups and large build artifacts (moved out of repository)
+backup remove/
+"github upload"/
+github\ upload/
+
+# Web updater build outputs
+web_updater/dist/
+web_updater/build/
+
+# Temporary installer/extract folders
+_installed_temp/
+_installed_temp_diag/
+
+# Installer and build outputs
+installer_output/
+dist_launcher/

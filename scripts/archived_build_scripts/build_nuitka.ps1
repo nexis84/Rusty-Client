@@ -1,0 +1,122 @@
+# RustyBot Nuitka Build Script
+# This script builds RustyBot using Nuitka instead of PyInstaller
+# Nuitka compiles Python to C which typically avoids antivirus false positives
+
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  RustyBot Nuitka Build Script" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Check if Nuitka is installed
+Write-Host "Checking for Nuitka..." -ForegroundColor Yellow
+try {
+    python -m nuitka --version
+    Write-Host "Nuitka found!" -ForegroundColor Green
+} catch {
+    Write-Host "ERROR: Nuitka not found!" -ForegroundColor Red
+    Write-Host "Please install: pip install nuitka ordered-set zstandard" -ForegroundColor Red
+    exit 1
+}
+
+# Clean previous builds
+Write-Host ""
+Write-Host "Cleaning previous builds..." -ForegroundColor Yellow
+if (Test-Path "Main.dist") {
+    Remove-Item -Recurse -Force "Main.dist"
+}
+if (Test-Path "Main.build") {
+    Remove-Item -Recurse -Force "Main.build"
+}
+if (Test-Path "Main.onefile-build") {
+    Remove-Item -Recurse -Force "Main.onefile-build"
+}
+
+# Build with Nuitka
+Write-Host ""
+Write-Host "Building RustyBot with Nuitka..." -ForegroundColor Yellow
+Write-Host "This may take 5-10 minutes on first build..." -ForegroundColor Yellow
+Write-Host ""
+
+python -m nuitka `
+    --standalone `
+    --windows-console-mode=disable `
+    --windows-icon-from-ico=icon.ico `
+    --enable-plugin=pyqt6 `
+    --include-module=secure_env_loader `
+    --include-module=first_run_setup `
+    --include-module=config_manager `
+    --include-data-dir=assets=assets `
+    --include-data-dir=sounds=sounds `
+    --include-data-dir=Fonts=Fonts `
+    --include-data-file=config.json=config.json `
+    --include-data-file=secure.env=secure.env `
+    --output-dir=dist `
+    Main.py
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Green
+    Write-Host "  Build Successful!" -ForegroundColor Green
+    Write-Host "========================================" -ForegroundColor Green
+    
+    # Show file size
+    # Nuitka outputs can vary; check for RustyBot.exe or Main.exe and report accordingly
+    $exePath1 = "dist\RustyBot.exe"
+    $exePath2 = "dist\Main.exe"
+    if (Test-Path $exePath1) {
+        $fileSize = (Get-Item $exePath1).Length
+        $fileSizeMB = [math]::Round($fileSize / 1MB, 2)
+        Write-Host ""
+        Write-Host "Executable created: $exePath1" -ForegroundColor Cyan
+        Write-Host "File size: $fileSizeMB MB" -ForegroundColor Cyan
+    } elseif (Test-Path $exePath2) {
+        $fileSize = (Get-Item $exePath2).Length
+        $fileSizeMB = [math]::Round($fileSize / 1MB, 2)
+        Write-Host ""
+        Write-Host "Executable created: $exePath2" -ForegroundColor Cyan
+        Write-Host "File size: $fileSizeMB MB" -ForegroundColor Cyan
+    }
+    
+    # Clean up unnecessary files from distribution
+    Write-Host ""
+    Write-Host "Cleaning up unnecessary distribution files..." -ForegroundColor Yellow
+    
+    $distPath = "dist\Main.dist"
+    $filesToRemove = @(
+        "v8_context_snapshot.debug.bin",  # Debug symbols
+        "_bz2.pyd",                        # Unused compression
+        "_lzma.pyd",                       # Unused compression
+        "_wmi.pyd",                        # Unused WMI
+        "_multiprocessing.pyd"             # Using threading instead
+        # NOTE: _overlapped.pyd is REQUIRED by asyncio - DO NOT REMOVE!
+    )
+    
+    $cleanupRemoved = 0
+    $cleanupSaved = 0
+    
+    foreach ($file in $filesToRemove) {
+        $fullPath = Join-Path $distPath $file
+        if (Test-Path $fullPath) {
+            $size = (Get-Item $fullPath).Length
+            Remove-Item $fullPath -Force
+            $cleanupRemoved++
+            $cleanupSaved += $size
+        }
+    }
+    
+    $cleanupSavedMB = [math]::Round($cleanupSaved / 1MB, 2)
+    Write-Host "  Removed $cleanupRemoved files ($cleanupSavedMB MB saved)" -ForegroundColor Green
+    
+    Write-Host ""
+    Write-Host "The executable is ready for distribution!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Note: This is a standalone build (folder-based distribution)" -ForegroundColor Yellow
+    Write-Host "Distribute the entire 'dist' folder to users" -ForegroundColor Yellow
+} else {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host "  Build Failed!" -ForegroundColor Red
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host "Check the errors above for details." -ForegroundColor Red
+    exit 1
+}
