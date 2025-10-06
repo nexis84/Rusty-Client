@@ -205,7 +205,7 @@ from ui_manager import UIManager
 # --- Constants ---
 APP_NAME = "RustyBotGiveaway"
 ORG_NAME = "RustyBit"
-APP_VERSION = "1.8.1" 
+APP_VERSION = "1.8.3" 
 
 LOADING_IMAGE_FILE = "loading_init.png"  # Root level - not moved to assets
 SOUND_NOTIFICATION_KEY = "notification"

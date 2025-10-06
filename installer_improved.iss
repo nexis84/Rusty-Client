@@ -3,7 +3,7 @@
 ; Version: 1.4.0
 
 #define MyAppName "RustyBot"
-#define MyAppVersion "1.8.1.0"
+#define MyAppVersion "1.8.3.0"
 #define MyAppPublisher "Nexis84"
 #define MyAppURL "https://github.com/nexis84/Rusty-Client"
 #define MyAppExeName "RustyBot.exe"
@@ -81,7 +81,7 @@ Source: "dist\RustyBot.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Configuration Files
 Source: "config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
-Source: ".env"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
+Source: "secure.env"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
 Source: ".tio.tokens.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
 
 ; Assets - Copy to main folders for runtime access

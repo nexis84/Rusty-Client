@@ -18,6 +18,7 @@ a = Analysis(
         ('Loading.png', '.'),
         ('loading_init.png', '.'),
         ('RUSTY BOT.png', '.'),
+        ('secure.env', '.'),
         ('Fonts/Shentox-SemiBold.ttf', 'Fonts'),
         ('Fonts/triglavian-complete.otf', 'Fonts'),
         ('sounds/44.wav', 'sounds'),
@@ -66,5 +67,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['icon.ico'],
+    icon=['icon_old.ico'],
 )

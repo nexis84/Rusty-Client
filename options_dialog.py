@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
     QCheckBox, QTabWidget, QSlider, QComboBox, QFrame, QSpacerItem, QSizePolicy,
     QGroupBox, QListWidget, QListWidgetItem, QTextEdit, QFileDialog, QScrollArea
 )
-from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QStandardPaths, QUrl
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QStandardPaths, QUrl, QTimer
 from PyQt6.QtGui import QDesktopServices, QIcon
 
 # --- Local Module Imports ---
@@ -255,6 +255,12 @@ class OptionsDialog(QDialog):
         self.open_data_folder_button.setToolTip("Opens the folder containing config.json and output_entry_method.txt in your file explorer.")
         self.open_data_folder_button.clicked.connect(self._open_data_folder)
         layout.addRow(self.open_data_folder_button)
+
+        # Check for Updates button
+        self.check_updates_button = QPushButton("Check for Updates")
+        self.check_updates_button.setToolTip("Check GitHub for available updates to RustyBot.")
+        self.check_updates_button.clicked.connect(self._check_for_updates)
+        layout.addRow(self.check_updates_button)
 
     def _update_entry_control_visibility(self):
         selected_type = self.entry_type_combo.currentText()
@@ -907,6 +913,153 @@ class OptionsDialog(QDialog):
                     try: subprocess.run(['xdg-open', str(folder_to_open.resolve())], check=True)
                     except Exception as linux_e: print(f"xdg-open fallback failed: {linux_e}"); QMessageBox.warning(self, "Error", f"Could not open the folder using fallback:\n{folder_to_open}\n\nPlease navigate there manually.")
         except Exception as e: print(f"Error opening data folder: {e}"); traceback.print_exc(); QMessageBox.critical(self, "Error", f"An unexpected error occurred while trying to open the data folder: {e}")
+
+    @pyqtSlot()
+    def _check_for_updates(self):
+        """Check for updates on GitHub and show the result"""
+        try:
+            # Import AutoUpdater here to avoid import issues
+            from auto_updater import AutoUpdater
+            from PyQt6.QtCore import QThread, pyqtSignal, QTimer
+            
+            print("DEBUG: Update check button clicked")
+            
+            # Define thread class
+            class UpdateCheckThread(QThread):
+                finished = pyqtSignal(object, object, object)  # has_update, latest_version, release_notes
+                
+                def run(self):
+                    print("DEBUG: Update check thread started")
+                    try:
+                        updater = AutoUpdater()
+                        print("DEBUG: Calling check_for_updates()...")
+                        result = updater.check_for_updates()
+                        print(f"DEBUG: check_for_updates() returned: {result}")
+                        self.finished.emit(*result)
+                    except Exception as e:
+                        import traceback
+                        print("DEBUG: Exception in update check thread:")
+                        traceback.print_exc()
+                        self.finished.emit(None, None, f"Error: {str(e)}")
+                    print("DEBUG: Update check thread finished")
+            
+            # Show progress dialog that auto-closes after 5 seconds
+            progress = QMessageBox(self)
+            progress.setWindowTitle("Checking for Updates")
+            progress.setText("Checking GitHub for updates...")
+            progress.setStandardButtons(QMessageBox.StandardButton.NoButton)
+            progress.setModal(False)  # Non-modal to prevent blocking
+            
+            print("DEBUG: Progress dialog created")
+            
+            # Add auto-close timer for the progress dialog (5 seconds)
+            progress_close_timer = QTimer(self)
+            progress_close_timer.setSingleShot(True)
+            
+            def auto_close_progress():
+                print("DEBUG: Auto-closing progress dialog after 5 seconds")
+                try:
+                    progress.close()
+                    progress.deleteLater()
+                except:
+                    pass
+            
+            progress_close_timer.timeout.connect(auto_close_progress)
+            progress_close_timer.start(5000)  # 5 second auto-close
+            
+            progress.show()
+            print("DEBUG: Progress dialog shown, will auto-close in 5 seconds")
+            
+            # Force UI update
+            QApplication.processEvents()
+            
+            # Add timeout safety mechanism for the thread
+            timeout_timer = QTimer(self)
+            timeout_timer.setSingleShot(True)
+            
+            def on_timeout():
+                print("DEBUG: Update check timed out!")
+                progress_close_timer.stop()
+                try:
+                    progress.close()
+                    progress.deleteLater()
+                except:
+                    pass
+                    
+                if hasattr(self, '_update_thread') and self._update_thread and self._update_thread.isRunning():
+                    QMessageBox.warning(self, "Update Check Timeout", 
+                                      "The update check is taking too long. Please check your internet connection and try again.")
+                    if self._update_thread:
+                        try:
+                            self._update_thread.finished.disconnect()
+                        except:
+                            pass
+                        self._update_thread.terminate()  # Force terminate
+                        self._update_thread.wait(1000)
+                        self._update_thread.deleteLater()
+                        self._update_thread = None
+                        print("DEBUG: Thread terminated due to timeout")
+            
+            timeout_timer.timeout.connect(on_timeout)
+            timeout_timer.start(15000)  # 15 second timeout for the actual check
+            print("DEBUG: Timeout timer started (15 seconds)")
+            
+            def on_update_check_finished(has_update, latest_version, release_notes):
+                print(f"DEBUG: Update check finished callback: has_update={has_update}, version={latest_version}")
+                # Stop both timers
+                timeout_timer.stop()
+                timeout_timer.deleteLater()
+                progress_close_timer.stop()
+                
+                # Close progress dialog immediately when result comes
+                try:
+                    progress.close()
+                    progress.deleteLater()
+                    print("DEBUG: Progress dialog closed in callback")
+                except Exception as e:
+                    print(f"DEBUG: Error closing progress dialog: {e}")
+                
+                # Clean up thread reference
+                if hasattr(self, '_update_thread') and self._update_thread:
+                    try:
+                        self._update_thread.finished.disconnect()
+                    except:
+                        pass
+                    self._update_thread.deleteLater()
+                    self._update_thread = None
+                
+                # Get current version for display
+                current_updater = AutoUpdater()
+                
+                if has_update is None:
+                    # Error occurred
+                    QMessageBox.warning(self, "Update Check Failed", 
+                                      f"Failed to check for updates:\n\n{release_notes}")
+                elif has_update:
+                    # Update available
+                    msg_box = QMessageBox(self)
+                    msg_box.setWindowTitle("Update Available!")
+                    msg_box.setText(f"A new version is available!\n\nCurrent: v{current_updater.current_version}\nLatest: v{latest_version}")
+                    msg_box.setDetailedText(release_notes)
+                    msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+                    msg_box.setIcon(QMessageBox.Icon.Information)
+                    msg_box.exec()
+                else:
+                    # No update available
+                    QMessageBox.information(self, "No Updates Available", 
+                                          f"You're running the latest version (v{current_updater.current_version}).")
+            
+            # Start the update check thread - store as instance variable to prevent garbage collection
+            self._update_thread = UpdateCheckThread()
+            self._update_thread.finished.connect(on_update_check_finished)
+            self._update_thread.start()
+            print("DEBUG: Update check thread started")
+            
+        except Exception as e:
+            import traceback
+            print("DEBUG: Exception in _check_for_updates:")
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Failed to check for updates:\n\n{str(e)}")
 
     def accept(self):
         temp_config_from_dialog = {}

@@ -90,8 +90,10 @@ backup/
 # Environment variables (sensitive credentials)
 .env
 secure.env
-# But include the example template
+
+# But include the example templates
 !.env.example
+!secure.env.example
 
 # User configuration
 user_config.json

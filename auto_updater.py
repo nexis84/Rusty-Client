@@ -14,7 +14,7 @@ from packaging import version
 import json
 
 # Current version - UPDATE THIS WITH EACH RELEASE
-CURRENT_VERSION = "1.8.1"
+CURRENT_VERSION = "1.8.3"
 
 # GitHub repository info
 GITHUB_OWNER = "nexis84"
@@ -295,7 +295,7 @@ class AutoUpdater:
         current_dir = os.path.dirname(current_exe)
         rustybot_exe = os.path.join(current_dir, "RustyBot.exe")
         
-        script = f"""
+        script = r"""
 @echo off
 timeout /t 2 /nobreak >nul
 echo Applying update...
@@ -325,7 +325,7 @@ if exist "{rustybot_exe}" (
 )
 del /F /Q "{backup_exe}" 2>nul
 exit
-"""
+""".format(current_exe=current_exe, new_exe=new_exe, backup_exe=backup_exe, current_dir=current_dir, rustybot_exe=rustybot_exe)
         script_path = os.path.join(tempfile.gettempdir(), "rustybot_update.bat")
         with open(script_path, 'w') as f:
             f.write(script)
@@ -358,7 +358,7 @@ exit
         """Create a Windows batch script to update the entire folder"""
         backup_dir = current_dir + "_backup"
         log_file = os.path.join(current_dir, "update_log.txt")
-        script = f"""
+        script = r"""
 @echo off
 set LOGFILE={log_file}
 echo ======================================== > "%LOGFILE%"
@@ -471,7 +471,7 @@ if exist "{current_dir}\RustyBot.exe" (
 echo [%TIME%] Update script finished successfully >> "%LOGFILE%"
 timeout /t 2 /nobreak >nul
 exit
-"""
+""".format(log_file=log_file, backup_dir=backup_dir, current_dir=current_dir, new_app_dir=new_app_dir, current_exe=current_exe)
         script_path = os.path.join(tempfile.gettempdir(), "rustybot_folder_update.bat")
         with open(script_path, 'w') as f:
             f.write(script)

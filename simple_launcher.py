@@ -203,7 +203,12 @@ def main():
             app_dir = Path(__file__).parent
         
         # Path to the main RustyBot executable
-        rustybot_exe = app_dir / "RustyBot.exe"
+        # First try dist/ directory (where PyInstaller puts executables)
+        rustybot_exe = app_dir / "dist" / "RustyBot.exe"
+        
+        # If not found in dist/, try same directory as launcher
+        if not rustybot_exe.exists():
+            rustybot_exe = app_dir / "RustyBot.exe"
         
         if not rustybot_exe.exists():
             root = tk.Tk()

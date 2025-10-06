@@ -38,10 +38,10 @@ def find_main_executable():
         exe_dir = Path(sys.executable).parent
         # Common layouts to check (app subfolder, root, current working dir)
         search_dirs.extend([
+            exe_dir / 'dist',  # Check dist directory first
             exe_dir / 'app',
             exe_dir,
             Path.cwd(),
-            exe_dir / 'dist',
             exe_dir.parent,
         ])
         # If PyInstaller onefile, _MEIPASS may contain bundled files
@@ -50,6 +50,7 @@ def find_main_executable():
     else:
         script_dir = Path(__file__).parent
         search_dirs.extend([
+            script_dir / 'dist',  # Check dist directory first
             script_dir / 'app',
             script_dir,
             script_dir.parent,
